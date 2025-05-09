@@ -141,7 +141,7 @@ loader.load('./screenwarp.gltf', (gltf) => {
 
     // Create the HTML iframe element
     iframe = document.createElement('iframe');
-    iframe.src = "https://brandoo.space/"; // Source HTML file for the iframe content
+    iframe.src = "desktop.html"; // Source HTML file for the iframe content
     iframe.style.width = "1024px"; // Intrinsic size of the iframe content
     iframe.style.height = "768px";
     iframe.style.border = "0"; // No border
