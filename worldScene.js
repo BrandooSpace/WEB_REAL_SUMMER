@@ -101,7 +101,7 @@ export function initWorldScene(container) {
 
             // --- Environment Map Setup ---
             const cubeLoader = new THREE.CubeTextureLoader();
-            cubeLoader.setPath('/envmap/'); // ** Ensure path is correct **
+            cubeLoader.setPath('envmap/'); // ** Ensure path is correct **
             const texture = cubeLoader.load([
                 'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png'
             ],
@@ -234,7 +234,7 @@ export function initWorldScene(container) {
             };
 
             // Load WORLD.glb
-            loader.load( '/WORLD.glb', (gltf) => { // ** Ensure path is correct **
+            loader.load( 'WORLD.glb', (gltf) => { // ** Ensure path is correct **
                     const worldModel = gltf.scene;
                     worldModel.traverse((node) => {
                         if (node.isMesh) {
@@ -254,7 +254,7 @@ export function initWorldScene(container) {
             );
 
             // Load biginside.gltf
-            loader.load( '/biginside.gltf', (gltf) => { // ** Ensure path is correct **
+            loader.load( 'biginside.gltf', (gltf) => { // ** Ensure path is correct **
                     bigInsideModelRef = gltf.scene;
                     console.log("biginside.gltf loaded successfully!");
                     bigInsideModelRef.traverse((node) => {
