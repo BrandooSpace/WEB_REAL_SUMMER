@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apparel - Web Store Catalog</title>
+  <link rel="stylesheet" href="win98-styles.css">
+  <style>
+    /* --- Page-Specific Styles --- */
+    body {
+        /* Inherits base from win98-styles.css via class */
+        display: flex;
+    }
+
+    /* Main flex container */
+    .outer-container {
+        display: flex;
+        flex-grow: 1;
+        height: 100%;
+        /* Apply standard window content border and margin */
+        border: 1px solid;
+        border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+        box-shadow: inset 1px 1px 0 var(--w98-border-black);
+        margin: 2px;
+        background-color: var(--w98-bg-gray); /* Outer container is gray */
+    }
+
+    /* --- Sidebar Styles (Copied from home.html - Consider moving to shared CSS) --- */
+    .sidebar {
+        width: 150px;
+        background-color: var(--w98-bg-gray);
+        border-right: 1px solid var(--w98-border-dark);
+        box-shadow: inset -1px 0 0 var(--w98-border-light);
+        padding: 8px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .sidebar h2 {
+        font-size: 12pt;
+        text-align: left;
+        margin: 0 0 8px 0;
+        padding-bottom: 4px;
+        border-bottom: 1px solid var(--w98-border-dark);
+        box-shadow: 0 1px 0 var(--w98-border-light);
+        color: var(--w98-text-black);
+    }
+    .sidebar a { /* Sidebar links are like buttons */
+        display: block;
+        padding: 4px 8px;
+        text-decoration: none;
+        font-size: 10pt;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        /* Apply button styles */
+        background: var(--w98-bg-gray);
+        border: 1px solid;
+        border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light); /* Outset */
+        box-shadow: 1px 1px 0 var(--w98-border-black);
+        color: var(--w98-text-black);
+        cursor: pointer;
+        transition: background-color 0.1s ease-out, padding 0.1s ease-out, border-color 0.1s ease-out;
+    }
+    .sidebar a.active {
+        border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark); /* Inset */
+        box-shadow: none;
+        background-color: #ddd;
+        padding: 5px 7px 3px 9px;
+        font-weight: bold;
+    }
+    .sidebar a:not(.active):active {
+        border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark); /* Inset */
+        box-shadow: none;
+        background-color: #bbb;
+        padding: 5px 7px 3px 9px; /* Nudge */
+    }
+    .sidebar a span {
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+
+    /* --- Main Content Wrapper --- */
+    .main-content-wrapper {
+         flex-grow: 1;
+         display: flex;
+         flex-direction: column;
+         overflow: hidden;
+         background-color: white; /* Main content area is white */
+    }
+
+    /* --- File Explorer Content --- */
+    .file-explorer-content {
+      flex-grow: 1;
+      padding: 8px;
+      overflow-y: auto;
+      background: white;
+      color: var(--w98-text-black);
+    }
+    .file-explorer-content h1 {
+        font-size: 14pt;
+        margin: 0 0 10px 0;
+        font-weight: bold;
+    }
+    .file-explorer-content p.intro-text {
+        font-size: 9pt;
+        margin: 0 0 15px 0;
+        line-height: 1.3;
+        color: #333;
+    }
+
+    /* --- File List Table Styles (Keep specific styles here) --- */
+    .file-list-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+    .file-list-table thead th {
+        background: var(--w98-bg-gray);
+        padding: 3px 6px; text-align: left; font-weight: normal;
+        /* Apply raised border */
+        border: 1px solid;
+        border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light);
+        box-shadow: 1px 1px 0 var(--w98-border-black);
+        cursor: default;
+    }
+    .file-list-table thead th:active { /* Apply inset border on active */
+        border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+        box-shadow: none;
+        padding: 4px 5px 2px 7px; /* Nudge */
+    }
+    .file-list-table tbody tr { cursor: pointer; }
+    .file-list-table tbody tr:hover { background: var(--w98-highlight); color: var(--w98-highlight-text); }
+    .file-list-table tbody td { padding: 4px 6px; border-bottom: 1px solid #eee; white-space: nowrap; vertical-align: middle; }
+    .file-list-table tbody tr:last-child td { border-bottom: none; }
+    .file-icon { width: 20px; height: 20px; display: inline-block; margin-right: 5px; vertical-align: middle; background: linear-gradient(135deg, #fff 0%, #fff 50%, #ddd 50%, #ddd 100%); border: 1px solid var(--w98-border-dark); box-shadow: 1px 1px 0 rgba(0,0,0,0.1); font-size: 14px; line-height: 18px; text-align: center; }
+    .item-thumbnail { width: 32px; height: 32px; border: 1px solid var(--w98-border-dark); vertical-align: middle; background: #eee; margin-left: 5px; image-rendering: pixelated; }
+    .col-name { width: 40%; }
+    .col-type { width: 30%; font-style: italic; color: #555; }
+    .col-size { width: 15%; text-align: right; font-family: monospace;}
+    .col-modified { width: 15%; }
+    .file-list-table tbody tr:hover .col-type,
+    .file-list-table tbody tr:hover .col-size { color: var(--w98-highlight-text); }
+
+    /* --- Status Bar --- */
+    .status-bar {
+      background: var(--w98-bg-gray);
+      border-top: 1px solid var(--w98-border-dark);
+      box-shadow: inset 0 1px 0 var(--w98-border-light);
+      padding: 2px 6px;
+      font-size: 9pt;
+      display: flex;
+      justify-content: space-between;
+      flex-shrink: 0;
+      color: var(--w98-text-black);
+    }
+    .status-bar div {
+       padding: 1px 4px;
+       /* Apply sunken border */
+       border: 1px solid;
+       border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+       box-shadow: inset 1px 1px 0 var(--w98-border-black);
+    }
+     #systemStatus { animation: pulse-status 5s infinite alternate; }
+     @keyframes pulse-status { from { opacity: 0.7; } to { opacity: 1; } }
+
+  </style>
+</head>
+<body class="win98-body">
+    <div class="outer-container">
+        <div class="sidebar">
+            <h2>Shop Sections</h2>
+            <a href="home.html"><span>🏠</span>Home</a>
+            <a href="apparel.html" class="active"><span>👕</span>Apparel</a>
+            <a href="about.html"><span>ℹ️</span>About Us</a>
+        </div>
+
+        <div class="main-content-wrapper">
+            <div class="file-explorer-content">
+                 <h1>Apparel Catalog</h1>
+                 <p class="intro-text">Browse our selection of available apparel items. Click on an item for details.</p>
+                <table class="file-list-table">
+                    <thead>
+                        <tr>
+                            <th class="col-name">Item Name</th>
+                            <th class="col-type">Category</th>
+                            <th class="col-size">Size</th>
+                            <th class="col-modified">Date Added</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fileListBody">
+                        <tr data-item-id="alpha" data-item-name="Classic Tee - Style Alpha" data-item-image="shirt1.png">
+                            <td class="col-name"><span class="file-icon">📄</span>Classic Tee - Alpha <img src="shirt1.png" alt="Alpha Preview" class="item-thumbnail"></td>
+                            <td class="col-type">T-Shirt</td>
+                            <td class="col-size">Lrg</td>
+                            <td class="col-modified">11/02/2024</td>
+                        </tr>
+                        <tr data-item-id="beta" data-item-name="Retro Hoodie - Beta Design" data-item-image="shirt2.png">
+                            <td class="col-name"><span class="file-icon">📄</span>Retro Hoodie - Beta <img src="shirt2.png" alt="Beta Preview" class="item-thumbnail"></td>
+                            <td class="col-type">Hoodie</td>
+                            <td class="col-size">Med</td>
+                            <td class="col-modified">11/02/2024</td>
+                        </tr>
+                        <tr data-item-id="gamma" data-item-name="Pixel Cap - Gamma Edition" data-item-image="shirt3.png">
+                            <td class="col-name"><span class="file-icon">🧢</span>Pixel Cap - Gamma <img src="shirt3.png" alt="Gamma Preview" class="item-thumbnail"></td>
+                            <td class="col-type">Hat</td>
+                            <td class="col-size">OSFA</td>
+                            <td class="col-modified">10/31/2024</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="status-bar">
+                <div id="itemCount">3 Item(s) Found</div>
+                <div id="systemStatus">Online Catalog</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      // --- Status bar hover script ---
+      const rows = document.querySelectorAll('.file-list-table tbody tr');
+      const statusBarItemCount = document.getElementById('itemCount');
+      const defaultStatusText = `${document.querySelectorAll('.file-list-table tbody tr').length} Item(s) Found`;
+      statusBarItemCount.textContent = defaultStatusText;
+      rows.forEach((row) => {
+        row.addEventListener('mouseover', () => {
+           const itemName = row.dataset.itemName || 'Unknown Item';
+           statusBarItemCount.textContent = `Selected: ${itemName}`;
+        });
+         row.addEventListener('mouseout', () => {
+           statusBarItemCount.textContent = defaultStatusText;
+        });
+      });
+
+      // --- Click Listener ---
+      const fileListBody = document.getElementById('fileListBody');
+      if (fileListBody) {
+          fileListBody.addEventListener('click', (event) => {
+              const clickedRow = event.target.closest('tr');
+              if (!clickedRow) return;
+              const itemId = clickedRow.dataset.itemId;
+              const itemName = clickedRow.dataset.itemName;
+              const itemImage = clickedRow.dataset.itemImage;
+              if (itemId && itemName && itemImage) {
+                  console.log(`Catalog Item Clicked: ID=${itemId}, Name=${itemName}, Image=${itemImage}`);
+                  window.parent.postMessage({ type: 'startDownload', payload: { id: itemId, name: itemName, image: itemImage } }, '*');
+              } else {
+                  console.warn("Clicked table row is missing required data attributes.");
+              }
+          });
+      } else {
+          console.error("Could not find the table body element (#fileListBody).");
+      }
+    </script>
+
+<script>
+    document.addEventListener('click', function(event) {
+      // Check if the clicked element is a button, link, or inside certain interactive areas
+      if (event.target.closest('button, a, .sidebar a, .file-list-table tbody tr, .folder-list-pane li, .email-list-table tbody tr')) {
+        // Optionally add more specific checks if needed
+        console.log('Interaction click detected in iframe:', event.target.tagName, event.target.textContent?.substring(0, 20));
+        window.parent.postMessage({ type: 'userInteractionClick' }, '*');
+      }
+    }, true); // Use capture phase to catch clicks early
+  </script>
+  </body>
+</html>

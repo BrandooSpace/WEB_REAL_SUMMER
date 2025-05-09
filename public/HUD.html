@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HUD Taskbar</title>
+    <style>
+        /* --- Basic Win9x Variables --- */
+        :root {
+            --win-bg-gray: #C0C0C0;
+            --win-border-light: #FFFFFF;
+            --win-border-dark: #808080;
+            --win-border-black: #000000;
+            --win-text-black: #000000;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: "Tahoma", "MS Sans Serif", Arial, sans-serif;
+            background-color: transparent; /* Body is transparent */
+        }
+
+        /* --- Taskbar Styles --- */
+        .hud-taskbar {
+            position: absolute; /* Position within the iframe */
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 28px; /* Standard taskbar height */
+            background-color: var(--win-bg-gray);
+            /* MODIFIED: Removed the border-top property entirely */
+            /* border-top: 1px solid var(--win-bg-gray); */
+            display: flex;
+            align-items: center;
+            padding: 2px; /* Minimal padding */
+            box-sizing: border-box;
+            z-index: 1; /* Ensure it's visible within its iframe */
+        }
+
+        .hud-start-button {
+            background-color: var(--win-bg-gray);
+            border: 1px solid;
+            border-color: var(--win-border-light) var(--win-border-dark) var(--win-border-dark) var(--win-border-light);
+            box-shadow: 1px 1px 0 var(--win-border-black);
+            padding: 1px 8px 1px 4px; /* Compact padding */
+            font-weight: bold;
+            cursor: default; /* Not interactive */
+            display: flex;
+            align-items: center;
+            margin-right: 4px;
+            font-size: 9pt; /* Smaller font */
+            line-height: 16px; /* Control height */
+            height: 22px; /* Match clock area */
+        }
+
+        .hud-start-button::before {
+            content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAHhJREFUOE9jZKAQMKLr/90MHFwYgPj/PxMDgyALAANxAwMDIxMTgwMMDAx4gQJjZgYGBgYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGeh8DAwPD/w8GBgYGRkYGBoYMDAwMiHqAAAMAo+QH/78a5wUAAAAASUVORK5CYII='); /* Win98 Start Icon */
+            margin-right: 4px;
+            width: 16px;
+            height: 16px;
+            image-rendering: pixelated;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .hud-clock-area {
+            margin-left: auto; /* Push clock to the right */
+            height: 22px; /* Height inside padding */
+            padding: 0 4px; /* Padding around clock text */
+            border: 1px solid;
+            border-color: var(--win-border-dark) var(--win-border-light) var(--win-border-light) var(--win-border-dark); /* Inset border */
+            box-shadow: inset 1px 1px 0 var(--win-border-black); /* Inner shadow */
+            display: flex;
+            align-items: center;
+        }
+
+        .hud-clock {
+            padding: 1px 2px;
+            background: transparent;
+            color: var(--win-text-black);
+            font-size: 9pt; /* Smaller font */
+            white-space: nowrap;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="hud-taskbar">
+        <div class="hud-start-button">Start</div>
+        <div class="hud-clock-area">
+            <div class="hud-clock" id="hudClock"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- Clock Update Function ---
+        function updateHUDClock() {
+            const clockElement = document.getElementById("hudClock");
+            if (!clockElement) return;
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            const ampm = hours >= 12 ? "PM" : "AM";
+            hours = hours % 12 || 12; // Convert to 12-hour format
+            minutes = minutes.toString().padStart(2, "0"); // Add leading zero
+            clockElement.innerText = `${hours}:${minutes} ${ampm}`;
+        }
+
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHUDClock(); // Initial call
+            setInterval(updateHUDClock, 1000 * 30); // Update every 30 seconds
+        });
+
+        console.log("HUD Taskbar (HUD.html) Loaded.");
+    </script>
+</body>
+</html>

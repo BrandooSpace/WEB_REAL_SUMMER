@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self';" />
+
+  <title>Web_Real</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="win98-styles.css">
+
+
+  <style>
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background-color: #111; overflow: hidden;
+    }
+
+    canvas { display: block; position: absolute; top: 0; left: 0; z-index: 0; }
+
+    #css-renderer {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; z-index: 1;
+    }
+    #css-renderer iframe, #css-renderer div > iframe {
+        pointer-events: auto !important; border: none; background: transparent;
+    }
+
+    /* --- Eyelid Styles --- */
+    .eyelid {
+        position: fixed; left: 0; width: 100%; height: 0;
+        background-color: #000; z-index: 10000;
+        transition: height 1.5s ease-in-out; pointer-events: none;
+    }
+    #eyelid-top { top: 0; }
+    #eyelid-bottom { bottom: 0; }
+    .eyelid.closing { height: 50vh; }
+
+    /* --- HUD Loader Iframe Styles --- */
+    #hudFrame {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        border: none; z-index: 10001; display: none; background-color: #000;
+    }
+
+    /* --- Win98 Popup Window Base Style (Uses consolidated styles now) --- */
+    .hud-popup-window {
+        position: fixed;
+        /* Uses w98-border-raised from win98-styles.css */
+        background-color: var(--w98-bg-gray);
+        z-index: 10002;
+        display: none;
+        overflow: hidden;
+        padding: 1px; /* Keep small padding for border */
+        pointer-events: auto;
+        box-sizing: border-box; /* Ensure padding is included */
+    }
+    .hud-popup-window iframe {
+        width: 100%; height: 100%; border: none; display: block;
+        background-color: transparent;
+        box-sizing: border-box;
+    }
+
+    /* --- Specific Popup Styles --- */
+    #adPopupHud { width: 340px; height: 400px; top: 60px; right: 30px; z-index: 10002; }
+    #subPopupHud { width: 450px; height: 480px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10003; }
+    #cardEntryPopupHud { width: 480px; height: 400px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10004; }
+    /* Style for the apparel ad popup */
+    #apparelAdPopupHud { width: 340px; height: 400px; bottom: 40px; right: 20px; z-index: 10005; }
+     /* Style for the assimilation popup - large, centered */
+    #assimilationPopupHud {
+        width: 420px; height: 250px; /* Adjusted size */
+        top: 50%; left: 50%; transform: translate(-50%, -50%);
+        z-index: 10008; /* High index */
+    }
+
+    /* --- Container for Random Popups --- */
+    #randomPopupContainer {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        pointer-events: none; /* Container doesn't block */
+        z-index: 10007; /* Below final popup, above others */
+        overflow: hidden;
+    }
+    /* Individual Random Popup Style */
+    .random-popup {
+        position: absolute; /* Positioned within the container */
+        width: 280px; /* Size of random popups */
+        height: 180px;
+        /* Uses w98-border-raised */
+        background-color: var(--w98-bg-gray);
+        display: block;
+        overflow: hidden;
+        padding: 1px;
+        pointer-events: auto; /* Popups are interactive (if needed) */
+        transition: opacity 0.5s ease-out;
+        opacity: 1;
+        box-sizing: border-box; /* Include padding */
+    }
+     .random-popup iframe {
+         width: 100%; height: 100%; border: none; display: block;
+         background-color: transparent;
+         box-sizing: border-box;
+     }
+     .random-popup.hiding {
+         opacity: 0;
+         pointer-events: none;
+     }
+
+    /* --- Final Integration Complete Popup Style (Integrated) --- */
+     #integrationCompletePopupHud {
+        position: fixed;
+        width: 400px; height: 280px;
+        top: 50%; left: 50%; transform: translate(-50%, -50%);
+        z-index: 10009; /* Highest z-index */
+        /* Uses w98-border-raised */
+        background-color: var(--w98-bg-gray);
+        display: none; /* Hidden initially */
+        overflow: hidden; /* Changed from visible */
+        padding: 2px; /* Adjusted for direct content border */
+        pointer-events: auto;
+        box-sizing: border-box; /* Ensure padding is included */
+        font-family: "Tahoma", "MS Sans Serif"; /* Set font family */
+        font-size: 11pt; /* Set base font size */
+        flex-direction: column; /* Added for layout */
+     }
+      /* Styles for direct content within the final popup */
+      #integrationCompletePopupHud .w98-title-bar { /* Inherits base .w98-title-bar */
+          margin: 0 0 2px 0; /* Adjust margin to fit inside padding */
+      }
+      #integrationCompletePopupHud .integration-content {
+          padding: 30px 40px;
+          text-align: center;
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 20px;
+          background-color: white;
+          margin: 0; /* No margin inside */
+          border: 1px solid; /* Inner sunken border */
+          border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+          box-shadow: inset 1px 1px 0 #808080;
+          height: calc(100% - 24px); /* Fill remaining space after title bar */
+          box-sizing: border-box;
+      }
+       #integrationCompletePopupHud .integration-content .icon { font-size: 48pt; margin-bottom: 10px; color: green; }
+       #integrationCompletePopupHud .integration-content .message { font-weight: bold; font-size: 14pt; margin: 0; }
+       #integrationCompletePopupHud .integration-content .sub-message { font-size: 10pt; color: #333; margin: 0; }
+       #integrationCompletePopupHud .integration-content .ok-button { margin-top: 15px; padding: 6px 25px; }
+       #integrationCompletePopupHud .integration-content .ok-button:focus { outline: 1px dotted var(--w98-text-black); outline-offset: -3px; }
+
+
+    /* --- FPV HUD Indicator Styles (Win98 Style) --- */
+    #fpvHudIndicator {
+      position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+      background-color: var(--w98-bg-gray);
+      /* Apply raised border */
+      border: 1px solid; border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light);
+      box-shadow: 1px 1px 0 var(--w98-border-black);
+      padding: 4px 12px;
+      font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
+      font-size: 10pt; color: var(--w98-text-black);
+      z-index: 10006; display: none; pointer-events: none; white-space: nowrap;
+    }
+
+    /* --- Main HUD Taskbar Container Styles --- */
+    #mainHudContainer {
+        position: fixed; bottom: 0; left: 0; width: 100%; height: 30px;
+        z-index: 999; pointer-events: none; overflow: hidden; display: none;
+    }
+    #mainHudFrame { width: 100%; height: 100%; border: none; }
+
+    /* --- Glitch Overlay Styles --- */
+    #glitch-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        z-index: 10008; /* Below final integration popup */
+        pointer-events: none;
+        display: none; /* Hidden by default */
+        opacity: 0;
+        overflow: hidden;
+    }
+    #glitch-overlay.active {
+        display: block;
+        /* Animation applied to pseudo-elements */
+    }
+
+    #glitch-overlay.active::before,
+    #glitch-overlay.active::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #000; /* Ensure black background */
+        opacity: 0; /* Start transparent */
+        /* Use a faster, more chaotic animation */
+        animation-duration: 0.6s; /* Faster overall */
+        animation-timing-function: steps(3, jump-none); /* More steps */
+        animation-iteration-count: infinite; /* Loop during effect */
+    }
+
+    /* Animation for the main overlay opacity (controls fade in/out) */
+    @keyframes glitch-fade {
+        0% { opacity: 0; }
+        10% { opacity: 0.85; } /* Quick fade in */
+        80% { opacity: 0.7; } /* Hold */
+        100% { opacity: 0; } /* Fade out */
+    }
+    /* Apply fade animation to the main overlay */
+     #glitch-overlay.active {
+        /* Use the duration passed from JS, default to 0.8s if not set */
+        animation: glitch-fade var(--glitch-duration, 0.8s) linear forwards;
+     }
+
+
+    /* More aggressive offset and visual distortion for pseudo-elements */
+    @keyframes glitch-offset-enhanced {
+      0% { transform: translate(0) skew(0); background-color: rgba(255, 0, 0, 0.3); opacity: 0.7; }
+      20% { transform: translate(-15px, 8px) skew(-8deg); background-color: rgba(0, 255, 0, 0.2); opacity: 0.5; }
+      40% { transform: translate(10px, -12px) skew(5deg); background-color: rgba(0, 0, 255, 0.4); opacity: 0.8; }
+      60% { transform: translate(-8px, 15px) skew(-3deg); background-color: rgba(255, 255, 0, 0.2); opacity: 0.6; }
+      80% { transform: translate(12px, -5px) skew(6deg); background-color: rgba(255, 0, 255, 0.3); opacity: 0.75; }
+      100% { transform: translate(0) skew(0); background-color: rgba(0, 255, 255, 0.2); opacity: 0.5; }
+    }
+     @keyframes glitch-offset-2-enhanced {
+      0% { transform: translate(0) skew(0); background-color: rgba(0, 255, 255, 0.3); opacity: 0.6; }
+      20% { transform: translate(13px, -6px) skew(7deg); background-color: rgba(255, 0, 255, 0.25); opacity: 0.7; }
+      40% { transform: translate(-9px, 10px) skew(-4deg); background-color: rgba(255, 255, 0, 0.35); opacity: 0.55; }
+      60% { transform: translate(16px, -11px) skew(8deg); background-color: rgba(0, 0, 255, 0.2); opacity: 0.8; }
+      80% { transform: translate(-11px, 7px) skew(-6deg); background-color: rgba(0, 255, 0, 0.3); opacity: 0.65; }
+      100% { transform: translate(0) skew(0); background-color: rgba(255, 0, 0, 0.2); opacity: 0.7; }
+    }
+
+    #glitch-overlay.active::before {
+        animation-name: glitch-offset-enhanced;
+        clip-path: polygon(0 0, 100% 0, 100% 48%, 0 52%); /* Jagged clip */
+    }
+    #glitch-overlay.active::after {
+        animation-name: glitch-offset-2-enhanced;
+        animation-delay: 0.05s; /* Slightly offset */
+        clip-path: polygon(0 100%, 100% 100%, 100% 55%, 0 45%); /* Jagged clip */
+    }
+    /* --- End Glitch Overlay Styles --- */
+
+  </style>
+</head>
+
+<body>
+  {/* --- Existing Popups --- */}
+  <div id="adPopupHud" class="hud-popup-window w98-border-raised">
+      <iframe id="adPopupFrame" src="about:blank"></iframe>
+  </div>
+  <div id="subPopupHud" class="hud-popup-window w98-border-raised">
+      <iframe id="subPopupFrame" src="about:blank"></iframe>
+  </div>
+  <div id="cardEntryPopupHud" class="hud-popup-window w98-border-raised">
+      <iframe id="cardEntryFrame" src="about:blank"></iframe>
+  </div>
+  <div id="apparelAdPopupHud" class="hud-popup-window w98-border-raised">
+      <iframe id="apparelAdFrame" src="about:blank"></iframe>
+  </div>
+  <div id="assimilationPopupHud" class="hud-popup-window w98-border-raised">
+       <iframe id="assimilationFrame" src="about:blank"></iframe>
+  </div>
+
+  {/* --- Container for Random Popups --- */}
+  <div id="randomPopupContainer"></div>
+
+  {/* --- MODIFIED: Integration Complete Popup (Direct Content) --- */}
+   <div id="integrationCompletePopupHud" class="hud-popup-window w98-border-raised">
+       {/* --- Direct Content Starts Here --- */}
+       <div class="w98-title-bar">
+           <span>System Notification</span>
+            <div class="w98-title-buttons">
+                 {/* <!-- Optional: Could add a disabled close button --> */}
+            </div>
+       </div>
+       <div class="integration-content">
+           <div class="icon">✅</div>
+           <p class="message">INTEGRATION COMPLETE</p>
+           <p class="sub-message">System synchronization successful. Welcome to the enhanced reality matrix.</p>
+           <button id="integrationOkButton" class="w98-button ok-button">OK</button> {/* Changed ID to be unique */}
+       </div>
+       <script>
+            // Scope the script to this specific popup
+            (function() {
+                const okButton = document.getElementById('integrationOkButton');
+                if (!okButton) {
+                    console.error("Integration OK button not found!");
+                    return;
+                }
+                let proceedTimeout; // Store timeout ID
+
+                function proceed() {
+                    console.log("Integration OK clicked or timed out. Reloading main application.");
+                    clearTimeout(proceedTimeout); // Clear timer if button clicked
+                    // Reload the top-level window to restart the experience
+                    window.top.location.reload();
+                }
+
+                okButton.addEventListener('click', proceed);
+
+                // Automatically proceed after a short delay as well
+                proceedTimeout = setTimeout(proceed, 7000); // 7 seconds
+
+                // Focus button when the popup becomes visible (requires JS in worldScene.js to show this div)
+                // We can't use DOMContentLoaded here as it's part of the main page load.
+                // Focusing will be handled by the logic that displays this popup.
+                // For initial testing, you could add: okButton.focus();
+                console.log("Integration Complete Popup Content Initialized");
+            })();
+       </script>
+       {/* --- Direct Content Ends Here --- */}
+   </div>
+
+
+  <div id="fpvHudIndicator">Click to move camera</div>
+
+  <div id="mainHudContainer">
+      <iframe id="mainHudFrame" src="about:blank"></iframe>
+  </div>
+
+  <div id="glitch-overlay"></div>
+
+  <div id="eyelid-top" class="eyelid"></div>
+  <div id="eyelid-bottom" class="eyelid"></div>
+  <iframe id="hudFrame" src="about:blank"></iframe>
+  <script type="module" src="main.js"></script>
+
+</body>
+</html>

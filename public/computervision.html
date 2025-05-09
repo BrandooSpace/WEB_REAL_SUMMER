@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrate - Seamless Human Integration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Apply Inter font and basic resets */
+        html, body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            height: 100%;
+            margin: 0;
+            padding: 0; /* Reset padding */
+            /* Set background, text color, and centering for body */
+            background-color: black;
+            color: #d1d5db; /* text-gray-300 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem; /* Add padding directly to body */
+            box-sizing: border-box; /* Include padding in height calculation */
+        }
+        /* Simple fade-in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Styles for the main content container */
+        #main-content-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: 100%;
+            max-width: 42rem; /* Approx max-w-2xl */
+            animation: fadeIn 1.2s ease-out forwards; /* Apply animation */
+        }
+
+        /* Styles for the image container */
+        #image-container {
+             /* MODIFIED: Reduced bottom margin */
+             margin-bottom: -3rem; /* Reduced from 2rem */
+        }
+
+        /* Styles for the image */
+        #eyeball-image {
+            display: block; /* Remove extra space below image */
+            margin-left: auto;
+            margin-right: auto;
+            width: 12rem; /* w-48 */
+            height: 12rem; /* h-48 */
+            object-fit: cover; /* Changed from contain to cover for better circle fill */
+            border: 4px solid #6366f1; /* border-indigo-500 */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            border-radius: 50%; /* rounded-full */
+        }
+        /* Responsive image size */
+        @media (min-width: 768px) { /* md breakpoint */
+             #eyeball-image {
+                width: 16rem; /* w-64 */
+                height: 16rem; /* h-64 */
+             }
+        }
+
+        /* Styles for the headline text */
+        #headline-text {
+            font-size: 3rem; /* Approx text-5xl */
+            line-height: 1.1; /* Tight leading */
+            font-weight: 800; /* font-extrabold */
+            color: #6d28d9; /* text-purple-700 */
+            /* MODIFIED: Reduced bottom margin */
+            margin-bottom: 1.5rem; /* Reduced from 2.5rem */
+        }
+        /* Responsive font size */
+        @media (min-width: 768px) { /* md breakpoint */
+             #headline-text {
+                font-size: 3.75rem; /* Approx text-6xl */
+             }
+        }
+
+        /* Styles for the button */
+        #integrate-button {
+            background-color: #4f46e5; /* bg-indigo-600 */
+            color: white;
+            font-weight: 700; /* font-bold */
+            padding: 1rem 2.5rem; /* py-4 px-10 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-size: 1.5rem; /* text-2xl */
+            line-height: 2rem;
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 300ms;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            border: none; /* Remove default border */
+            cursor: pointer;
+            /* Added small bottom margin for spacing before final text */
+            margin-bottom: 1.5rem;
+        }
+        #integrate-button:hover {
+            background-color: #4338ca; /* hover:bg-indigo-700 */
+            transform: scale(1.05);
+            box-shadow: 0 0 15px 5px rgba(99, 102, 241, 0.6); /* Indigo glow */
+        }
+        /* Responsive button font size */
+         @media (min-width: 768px) { /* md breakpoint */
+             #integrate-button {
+                 font-size: 1.875rem; /* text-3xl */
+                 line-height: 2.25rem;
+             }
+         }
+
+
+        /* Styles for the final question text */
+        #final-question {
+             /* MODIFIED: Reduced top margin */
+             margin-top: 0; /* Removed top margin, rely on button's bottom margin */
+             font-size: 1.25rem; /* text-xl */
+             color: #6b7280; /* text-gray-500 */
+             font-style: italic;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="main-content-container">
+
+        <div id="image-container">
+            <img id="eyeball-image" src="public/eyeball.png"
+                 alt="Integration Interface"
+                 onerror="this.onerror=null; this.src='https://placehold.co/256x256/111827/4f46e5?text=👁️'; this.alt='Placeholder Eyeball Icon'; this.style.backgroundColor='#111827'; this.style.borderRadius='50%';">
+        </div>
+
+        <p id="headline-text">
+            A new world of seamless human integration into tech.
+        </p>
+
+        <button id="integrate-button">
+            Integrate Now
+        </button>
+
+        <p id="final-question">
+            Why be human?
+        </p>
+
+    </div>
+
+    <script>
+        const integrateButton = document.getElementById('integrate-button');
+        if (integrateButton) {
+            integrateButton.addEventListener('click', () => {
+                console.log('Integrate Now button clicked. Sending startTransitionGlitch message to top window...');
+                // ** MODIFICATION: Use window.top to target the main index.html window **
+                window.top.postMessage({ type: 'startTransitionGlitch' }, '*');
+
+                 // Provide visual feedback and disable the button after click
+                 integrateButton.disabled = true;
+                 integrateButton.textContent = 'Integrating...';
+                 integrateButton.style.opacity = '0.7';
+                 integrateButton.style.cursor = 'wait';
+            });
+        } else {
+            console.error('Integrate button not found!');
+        }
+    </script>
+    </body>
+</html>

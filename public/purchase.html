@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compliance Protocol: Integration</title>
+    <link rel="stylesheet" href="win98-styles.css">
+    <style>
+        /* --- Page-Specific Styles --- */
+        /* ** NEW: Ensure html and body take full height and use border-box ** */
+        html {
+            height: 100%;
+            box-sizing: border-box;
+        }
+        body.win98-body {
+            background-color: #008080; /* Teal background */
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11pt;
+            overflow: hidden; /* Prevent body scroll, allow dialog content scroll */
+            height: 100%; /* Explicit height */
+            padding: 10px; /* Add some padding around the dialog */
+            box-sizing: border-box; /* Include padding in height */
+        }
+
+        /* --- Dialog Box --- */
+        .dialog-box {
+            width: 400px;
+            /* ** MODIFICATION: Set max-height and allow flex height ** */
+            max-width: 100%; /* Prevent overflow on small screens */
+            max-height: 100%; /* Prevent overflow */
+            height: auto; /* Allow height to adjust to content, up to max-height */
+            background: var(--w98-bg-gray); padding: 2px;
+            display: flex; flex-direction: column;
+            /* min-height: 400px; /* Removed fixed min-height */
+        }
+        .dialog-box.w98-border-raised { /* Apply border class */ }
+
+        /* --- Title Bar --- */
+        .title-bar { margin-bottom: 8px; flex-shrink: 0; /* Prevent shrinking */ }
+        .title-bar button { cursor: default; }
+
+        /* --- Content Area --- */
+        .dialog-content {
+            padding: 15px 20px; text-align: center; display: flex; flex-direction: column;
+            align-items: center; gap: 10px;
+            flex-grow: 1; /* Allow content to take available space */
+            overflow-y: auto; /* Enable scrolling ONLY for content if needed */
+            min-height: 0; /* Allow content area to shrink if needed */
+        }
+
+        /* Message Styles */
+        .message { font-weight: bold; font-size: 13pt; margin-bottom: 5px; text-transform: uppercase; color: #AA0000; flex-shrink: 0; }
+        .item-info { padding: 5px 0; margin-bottom: 5px; display: flex; flex-direction: column; align-items: center; gap: 5px; width: 100%; flex-shrink: 0; }
+        .item-info img { width: 60px; height: 60px; border: 1px solid var(--w98-border-dark); background: #FFFFFF; padding: 3px; image-rendering: pixelated; margin-bottom: 5px; }
+        .item-name { font-style: italic; font-size: 9pt; margin-bottom: 10px; color: #444; flex-shrink: 0;}
+
+        /* --- Purchase Summary Styles --- */
+        .purchase-summary {
+            width: 85%; margin: 5px auto 15px auto;
+            border: 1px solid; border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+            box-shadow: inset 1px 1px 0 var(--w98-border-black);
+            background-color: var(--w98-border-light); padding: 10px 15px; font-size: 9pt;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        .summary-line { display: flex; justify-content: space-between; padding: 1px 0; }
+        .summary-label { text-align: left; }
+        .summary-amount { text-align: right; font-family: "Courier New", monospace; }
+        .summary-divider { height: 1px; border: none; border-top: 1px solid var(--w98-border-dark); border-bottom: 1px solid var(--w98-border-light); margin: 5px 0; }
+        .summary-total { display: flex; justify-content: space-between; font-weight: bold; padding-top: 4px; font-size: 11pt; }
+        .summary-total .summary-amount { color: #CC0000; animation: pulse-total 1.5s infinite alternate; }
+        @keyframes pulse-total { from { opacity: 0.6; } to { opacity: 1; } }
+
+
+        .instruction {
+             font-size: 13pt;
+             font-weight: bold;
+             margin-top: 0;
+             margin-bottom: 10px; /* Add margin below */
+             flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        /* --- Button Style --- */
+        #entryButton {
+            font-size: 11pt; padding: 8px 20px;
+            margin-top: auto; /* Push to bottom of flex container */
+            margin-bottom: 5px; /* Add some space at the very bottom */
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        #entryButton:active { padding: 9px 19px 7px 21px; }
+
+        /* Warning Text */
+        .warning { font-size: 8pt; color: #600000; margin-top: 10px; font-weight: bold; flex-shrink: 0; }
+
+    </style>
+</head>
+<body class="win98-body">
+    <div class="dialog-box w98-border-raised">
+        <div class="title-bar w98-title-bar">
+            <span>Mandatory Compliance Protocol: Integration</span>
+            <div class="w98-title-buttons">
+                <button disabled>X</button>
+            </div>
+        </div>
+        <div class="dialog-content">
+            <p class="message">AUTHORIZE MANDATED EXPENDITURE</p>
+
+            <div class="item-info">
+                 <img id="itemPreviewImage" src="public/723design.png" alt="Asset Preview">
+                <span id="itemNameDisplay" class="item-name">Integration Target: [Designation Pending]</span>
+            </div>
+
+            <div class="purchase-summary">
+                <div class="summary-line">
+                    <span class="summary-label">Base Resource Cost:</span>
+                    <span class="summary-amount">$  7.99</span>
+                </div>
+                <div class="summary-line">
+                    <span class="summary-label">System Integration Fee (Tier 2):</span>
+                    <span class="summary-amount">$  4.85</span>
+                </div>
+                 <div class="summary-line">
+                    <span class="summary-label">Data Packet Handling & Routing:</span>
+                    <span class="summary-amount">$  3.10</span>
+                </div>
+                 <div class="summary-line">
+                    <span class="summary-label">Regulatory Compliance Surcharge (7B):</span>
+                    <span class="summary-amount">$  6.55</span>
+                </div>
+                 <div class="summary-line">
+                    <span class="summary-label">Ontological Processing Overhead:</span>
+                    <span class="summary-amount">$ 11.90</span>
+                </div>
+                 <div class="summary-line">
+                    <span class="summary-label">Temporal Flux Adjustment Fee:</span>
+                    <span class="summary-amount">$  2.75</span>
+                </div>
+                 <div class="summary-line">
+                    <span class="summary-label">Existential Bandwidth Tax (Est.):</span>
+                    <span class="summary-amount">$  8.30</span>
+                </div>
+                 <div class="summary-line">
+                    <span class="summary-label">Mandatory Network Contribution:</span>
+                    <span class="summary-amount">$  5.00</span>
+                </div>
+                <hr class="summary-divider">
+                 <div class="summary-total">
+                    <span class="summary-label">TOTAL OBLIGATION:</span>
+                    <span class="summary-amount">$ 50.44</span>
+                 </div>
+            </div>
+
+            <p id="instructionText" class="instruction">Resource acquisition requires system integration. Proceed to integration portal.</p>
+
+            <p class="warning">Synchronization is IRREVERSIBLE. Non-compliance penalties automatically assessed via Neural Link.</p>
+
+            <button id="entryButton" class="w98-button">PROCEED TO INTEGRATION</button>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const itemName = params.get('name') || "Designated Asset";
+            const itemImageSrc = params.get('image');
+
+            const nameDisplay = document.getElementById('itemNameDisplay');
+            const imagePreview = document.getElementById('itemPreviewImage');
+
+            if (nameDisplay) { nameDisplay.textContent = `Integration Target: ${itemName}`; }
+            if (imagePreview && itemImageSrc) {
+                imagePreview.src = decodeURIComponent(itemImageSrc);
+                imagePreview.alt = `Preview: ${itemName}`;
+            } else if (imagePreview) { imagePreview.alt = `Preview: ${itemName}`; }
+        });
+
+        const entryButton = document.getElementById('entryButton');
+
+        if (entryButton) {
+            entryButton.addEventListener('click', () => {
+                console.log("Proceed to Integration button clicked. Navigating immediately...");
+                entryButton.disabled = true;
+                entryButton.textContent = "PROCESSING...";
+                console.log("Navigating to forcebuy.html");
+                window.location.href = 'forcebuy.html';
+            });
+        }
+    </script>
+<script>
+    document.addEventListener('click', function(event) {
+      // Check if the clicked element is a button, link, or inside certain interactive areas
+      if (event.target.closest('button, a, .sidebar a, .file-list-table tbody tr, .folder-list-pane li, .email-list-table tbody tr')) {
+        // Optionally add more specific checks if needed
+        console.log('Interaction click detected in iframe:', event.target.tagName, event.target.textContent?.substring(0, 20));
+        window.parent.postMessage({ type: 'userInteractionClick' }, '*');
+      }
+    }, true); // Use capture phase to catch clicks early
+  </script>
+  </body>
+</html>

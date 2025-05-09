@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>About Us - Web Store</title>
+    <link rel="stylesheet" href="win98-styles.css">
+    <style>
+        /* --- Page-Specific Styles --- */
+        body {
+            /* Inherits base from win98-styles.css via class */
+            display: flex;
+        }
+
+        .container {
+            display: flex;
+            flex-grow: 1;
+            height: 100%;
+        }
+
+        /* --- Sidebar Styles (Copied from home.html - Consider moving to shared CSS) --- */
+        .sidebar {
+            width: 150px;
+            background: var(--w98-bg-gray);
+            border-right: 1px solid var(--w98-border-dark);
+            box-shadow: inset -1px 0 0 var(--w98-border-light);
+            padding: 8px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .sidebar h2 {
+            font-size: 12pt;
+            text-align: left;
+            margin: 0 0 8px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--w98-border-dark);
+            box-shadow: 0 1px 0 var(--w98-border-light);
+            color: var(--w98-text-black);
+        }
+        .sidebar a { /* Sidebar links are like buttons */
+            display: block;
+            padding: 4px 8px;
+            text-decoration: none;
+            font-size: 10pt;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            /* Apply button styles */
+            background: var(--w98-bg-gray);
+            border: 1px solid;
+            border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light); /* Outset */
+            box-shadow: 1px 1px 0 var(--w98-border-black);
+            color: var(--w98-text-black);
+            cursor: pointer;
+            transition: background-color 0.1s ease-out, padding 0.1s ease-out, border-color 0.1s ease-out;
+        }
+         .sidebar a.active {
+             border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark); /* Inset */
+             box-shadow: none;
+             background-color: #ddd;
+             padding: 5px 7px 3px 9px; /* Nudge */
+             font-weight: bold;
+         }
+        .sidebar a:not(.active):active {
+             border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark); /* Inset */
+             box-shadow: none;
+             background-color: #bbb;
+             padding: 5px 7px 3px 9px; /* Nudge */
+        }
+         .sidebar a span {
+             margin-right: 5px;
+             vertical-align: middle;
+         }
+
+        /* --- Content Area Styles --- */
+        .content {
+            /* Apply standard window content border and padding */
+            flex-grow: 1;
+            margin: 2px;
+            overflow-y: auto;
+        }
+        .content.w98-border-window-content { /* Apply border class */
+             padding: 15px 20px; /* Use standard padding */
+        }
+
+        .content h1 {
+            font-size: 18pt;
+            margin: 0 0 15px 0;
+            font-weight: bold;
+            color: var(--w98-highlight); /* Use variable */
+        }
+        .content p {
+            font-size: 11pt;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+         /* **** MODIFICATION: Added pulsing animation for synergy portal **** */
+         @keyframes pulse-synergy-portal-about {
+            0% { background-color: var(--w98-bg-gray); }
+            50% { background-color: #9370DB; }
+            100% { background-color: var(--w98-bg-gray); }
+        }
+        .pulse-synergy-portal-about {
+            animation: pulse-synergy-portal-about 3s infinite ease-in-out;
+        }
+        .pulse-synergy-portal-about:hover,
+        .pulse-synergy-portal-about:active {
+            animation: none;
+        }
+
+    </style>
+</head>
+<body class="win98-body">
+  <div class="container">
+    <div class="sidebar">
+        <h2>Shop Sections</h2>
+        <a href="home.html"><span>🏠</span>Home</a>
+        <a href="apparel.html"><span>👕</span>Apparel</a>
+        <a href="about.html" class="active"><span>ℹ️</span>About Us</a>
+        <a href="computervision.html" class="pulse-synergy-portal-about"><span>⚙️</span>Synergy Portal</a>
+    </div>
+    <div class="content w98-border-window-content">
+      <h1>About Us</h1>
+      <p>This online store was established in 1998 to provide the best digital shopping experience.</p>
+      <p>We pride ourselves on leveraging the latest web technologies (like HTML!) to bring quality products directly to your desktop.</p>
+      <p>Thank you for visiting! Ensure full system compliance for optimal service.</p>
+      </div>
+  </div>
+  <script>
+    document.addEventListener('click', function(event) {
+      // Check if the clicked element is a button, link, or inside certain interactive areas
+      if (event.target.closest('button, a, .sidebar a, .file-list-table tbody tr, .folder-list-pane li, .email-list-table tbody tr')) {
+        // Optionally add more specific checks if needed
+        console.log('Interaction click detected in iframe:', event.target.tagName, event.target.textContent?.substring(0, 20));
+        window.parent.postMessage({ type: 'userInteractionClick' }, '*');
+      }
+    }, true); // Use capture phase to catch clicks early
+  </script>
+  </body>
+</html>

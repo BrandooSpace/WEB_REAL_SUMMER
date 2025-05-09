@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Subscription - Secure Portal</title>
+    <link rel="stylesheet" href="win98-styles.css">
+    <style>
+        /* --- Page-Specific Styles --- */
+        html, body {
+            margin: 0; padding: 0; height: 100%; overflow: hidden;
+            font-family: "Tahoma", "MS Sans Serif", Arial, sans-serif;
+            background-color: var(--w98-bg-gray); font-size: 10pt; color: var(--w98-text-black);
+        }
+
+        .browser-container { display: flex; flex-direction: column; height: 100%; }
+
+        /* --- Toolbar Styles --- */
+        .ie-toolbar, .ie-address-bar {
+            background: var(--w98-bg-gray); padding: 2px 5px;
+            border-bottom: 1px solid var(--w98-border-dark);
+            box-shadow: 0 1px 0 var(--w98-border-light);
+            display: flex; align-items: center; flex-shrink: 0;
+            font-size: 9pt; height: 26px;
+        }
+        .ie-toolbar button { /* Uses w98-button base */
+            padding: 2px 5px; margin-right: 2px; min-width: 24px; height: 22px;
+            border: 1px solid var(--w98-bg-gray); box-shadow: none; /* Flat appearance */
+        }
+        .ie-toolbar button:hover { /* Raised on hover */
+            border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light);
+            box-shadow: 1px 1px 0 var(--w98-border-black);
+        }
+        .ie-toolbar button:active { /* Inset on active */
+            border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+            box-shadow: none; padding: 3px 4px 1px 6px;
+        }
+
+        /* --- Address Bar Styles --- */
+        .ie-address-bar label { margin-right: 4px; color: #555; font-size: 8pt; }
+        .ie-address-bar input {
+            flex-grow: 1;
+            /* Apply sunken border */
+            border: 1px solid; border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+            box-shadow: inset 1px 1px 0 var(--w98-border-black);
+            padding: 2px 4px; font-size: 9pt; height: 18px; margin-right: 4px;
+            background-color: var(--w98-border-light);
+        }
+         .ie-address-bar button { /* Uses w98-button base */
+            padding: 1px 8px; font-weight: normal; font-size: 9pt; height: 22px;
+         }
+         .ie-address-bar button:active { /* Keep specific active padding */
+             padding: 2px 7px 0px 9px;
+         }
+
+        /* --- Content Area --- */
+        .content-area {
+            flex-grow: 1; background-color: white;
+            /* Apply window content border */
+            border: 1px solid; border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+            box-shadow: inset 1px 1px 0 var(--w98-border-black);
+            margin: 2px; padding: 15px 20px; overflow-y: auto;
+        }
+        .content-area h1 {
+            font-size: 16pt; color: var(--w98-highlight); margin: 0 0 15px 0;
+            font-weight: bold; text-align: center;
+        }
+        .content-area p { font-size: 10pt; line-height: 1.5; margin-bottom: 12px; }
+        .content-area strong { font-weight: bold; }
+        .content-area ul { margin: 10px 0 15px 30px; padding: 0; list-style: disc; }
+        .content-area li { margin-bottom: 5px; }
+
+        /* Purchase Button */
+        .purchase-button { /* Uses w98-button base */
+            display: block; margin: 20px auto 10px auto;
+            padding: 8px 25px; font-size: 11pt; font-weight: bold;
+        }
+        .purchase-button:active { /* Keep specific active padding */
+             padding: 9px 24px 7px 26px;
+        }
+         .disclaimer {
+             font-size: 8pt; color: #666; text-align: center; margin-top: 20px;
+             border-top: 1px dotted #999; padding-top: 8px;
+         }
+
+    </style>
+</head>
+<body class="win98-body">
+    <div class="browser-container">
+        <div class="ie-toolbar">
+            <button id="btnBack" title="Back" class="w98-button" disabled>◄</button>
+            <button id="btnForward" title="Forward" class="w98-button" disabled>►</button>
+            <button id="btnRefresh" title="Refresh" class="w98-button">⟳</button>
+        </div>
+        <div class="ie-address-bar">
+            <label>Address:</label>
+            <input type="text" value="sys://integration.subscribe" readonly>
+            <button id="btnGo" class="w98-button" disabled>Go</button>
+        </div>
+        <div class="content-area">
+            <h1>Integration Subscription Service</h1>
+            <p>Welcome, Unit. Continued access to the integrated reality requires an active subscription.</p>
+            <p><strong>Subscription Tiers:</strong></p>
+            <ul>
+                <li><strong>Standard Integration (Required):</strong> Basic reality matrix synchronization, cognitive function support, mandatory data stream access.</li>
+                <li><strong>Enhanced Integration (Optional):</strong> Includes Standard features plus accelerated processing, priority data routing, and access to legacy sensory input modules.</li>
+                <li><strong>Total Immersion Package (Premium):</strong> All features plus dedicated neural bandwidth, custom reality filters, and beta access to consciousness expansion protocols.</li>
+            </ul>
+            <p>Please select your desired tier and proceed to authorization.</p>
+
+            <button class="w98-button purchase-button" onclick="handleAuthorizeClick()">Authorize Subscription Payment</button>
+
+            <p class="disclaimer">
+                By authorizing payment, you agree to the perpetual terms of service (Rev 14.G), including waiver of independent consciousness and mandatory system resource contribution. All transactions are final and non-refundable across all timelines.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const refreshBtn = document.getElementById('btnRefresh');
+        if (refreshBtn) {
+            refreshBtn.onclick = () => {
+                console.log("Refresh clicked (placeholder)");
+                const content = document.querySelector('.content-area');
+                if(content) {
+                    content.style.opacity = '0.5';
+                    setTimeout(() => content.style.opacity = '1', 150);
+                }
+            };
+        }
+
+        function handleAuthorizeClick() {
+            console.log("Authorize Subscription Payment button clicked. Sending message...");
+            window.parent.postMessage({ type: 'loadCardEntryPage' }, '*');
+            const button = document.querySelector('.purchase-button');
+             if(button) {
+                button.disabled = true;
+                button.style.opacity = '0.6';
+                button.style.cursor = 'default';
+                button.textContent = 'Processing...';
+            }
+        }
+    </script>
+<script>
+    document.addEventListener('click', function(event) {
+      // Check if the clicked element is a button, link, or inside certain interactive areas
+      if (event.target.closest('button, a, .sidebar a, .file-list-table tbody tr, .folder-list-pane li, .email-list-table tbody tr')) {
+        // Optionally add more specific checks if needed
+        console.log('Interaction click detected in iframe:', event.target.tagName, event.target.textContent?.substring(0, 20));
+        window.parent.postMessage({ type: 'userInteractionClick' }, '*');
+      }
+    }, true); // Use capture phase to catch clicks early
+  </script>
+  </body>
+</html>

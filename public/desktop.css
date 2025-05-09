@@ -1,0 +1,393 @@
+/* GENERAL PAGE SETUP */
+body {
+    background: #008080; /* Classic Win95/98 Teal */
+    margin: 0;
+    overflow: hidden;
+    font-family: "MS Sans Serif", sans-serif; /* Essential Win9x font */
+    font-size: 11pt; /* More authentic default size */
+    image-rendering: pixelated; /* Keep for sharp edges */
+    user-select: none; /* Prevent text selection on desktop */
+}
+
+/* ----- Standard Win9x Colors ----- */
+:root {
+    --win-bg-gray: #C0C0C0; /* Standard control background */
+    --win-border-light: #FFFFFF; /* Lighter edge for 3D effect */
+    --win-border-dark: #808080; /* Darker edge for 3D effect */
+    --win-border-black: #000000; /* Outermost border */
+    --win-title-bar-active: #000080; /* Navy blue */
+    --win-title-text: #FFFFFF;
+}
+
+/* ----- Reusable Border Styles ----- */
+.border-outset {
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--win-border-light) var(--win-border-dark) var(--win-border-dark) var(--win-border-light);
+    box-shadow: inset 1px 1px 0 var(--win-bg-gray), 1px 1px 0 var(--win-border-black); /* Inner bevel + outer shadow */
+}
+
+.border-inset-deep {
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--win-border-dark) var(--win-border-light) var(--win-border-light) var(--win-border-dark);
+    box-shadow: inset 1px 1px 0 var(--win-border-black); /* Inner shadow */
+}
+
+/* DESKTOP ICONS */
+.desktop {
+    display: flex;
+    flex-direction: column; /* Icons stack vertically first */
+    flex-wrap: wrap;       /* Then wrap horizontally */
+    align-content: flex-start; /* Start placing items from top-left */
+    padding: 5px;          /* Minimal padding */
+    height: calc(100vh - 40px); /* Desktop area above taskbar */
+    gap: 1px; /* Small gap between potential icon selections */
+}
+
+.icon {
+    width: 75px;       /* More compact icon size */
+    height: 75px;      /* Square aspect, text below */
+    text-align: center;
+    cursor: pointer;
+    margin: 10px 5px; /* Spacing between icons */
+    font-size: 11pt;   /* Standard Win9x font size */
+    color: white;
+    text-shadow: 1px 1px 1px black; /* Subtle shadow */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Icon at top, text below */
+    /* user-select: none; Applied to body */
+    /* background: rgba(0, 0, 255, 0.3); /* Uncomment to see icon hit area */
+}
+
+.icon:active {
+    /* Basic selection simulation */
+    /* Real Win9x uses background change + dotted border */
+}
+
+.icon .icon-graphic {
+    width: 32px;        /* Standard Win9x icon size */
+    height: 32px;       /* Standard Win9x icon size */
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px; /* Adjust emoji size */
+    color: black;     /* Reset color for emoji */
+    font-weight: normal;
+    text-transform: none;
+    image-rendering: pixelated;
+    position: relative; /* Needed for ::before */
+    text-shadow: none; /* Remove shadow from graphic itself */
+}
+
+.icon p {
+    margin: 0;
+    padding: 1px 2px; /* Small padding for text */
+    line-height: 1.1;
+    /* background: blue; */ /* Add highlight on selection later */
+}
+
+/* UNIQUE ICON STYLES (Using ::before on icon-graphic) */
+.icon-graphic.browser::before,
+.icon-graphic.computer::before,
+.icon-graphic.recycle::before {
+    display: block;
+    font-size: 28px; /* Match parent font-size */
+    line-height: 32px; /* Center vertically */
+    width: 32px;
+    height: 32px;
+    position: absolute; /* Position within the graphic div */
+    left: 0;
+    top: 0;
+    text-align: center;
+    image-rendering: pixelated;
+    /* Removed filter/shadow - keep icons clean */
+}
+
+.icon-graphic.browser::before { content: "🌍"; }
+.icon-graphic.computer::before { content: "🖥️"; } /* Using a slightly different computer */
+.icon-graphic.recycle::before { content: "🗑️"; }
+
+/* FULL TASKBAR */
+.taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 28px; /* Standard Win9x taskbar height */
+    background: var(--win-bg-gray);
+    border-top: 1px solid var(--win-border-light); /* Top highlight */
+    display: flex;
+    align-items: center;
+    padding: 2px; /* Minimal padding */
+    z-index: 100; /* Ensure it's above desktop icons */
+    box-sizing: border-box;
+}
+
+/* START BUTTON */
+.start-button {
+    background: var(--win-bg-gray);
+    padding: 2px 6px; /* Compact padding */
+    margin-right: 4px;
+    cursor: pointer;
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--win-border-light) var(--win-border-dark) var(--win-border-dark) var(--win-border-light); /* Outset border */
+    box-shadow: 1px 1px 0 var(--win-border-black); /* Outer shadow */
+    font-weight: bold;
+    font-size: 11pt;
+    /* text-shadow: 1px 1px 0px black; /* No text shadow on buttons */
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Smaller gap */
+    font-family: "MS Sans Serif", sans-serif;
+    position: relative;
+    line-height: 16px; /* Control height */
+}
+
+.start-button:active {
+    border-color: var(--win-border-dark) var(--win-border-light) var(--win-border-light) var(--win-border-dark); /* Inset border */
+    box-shadow: none; /* Remove outer shadow */
+    background-color: #bbb; /* Slightly darker background */
+    padding: 3px 5px 1px 7px; /* Shift content slightly */
+}
+
+/* START ICON LOGO (Keep existing complex one) */
+.start-button::before {
+    content: "";
+    display: inline-block;
+    width: 16px; /* Smaller logo */
+    height: 16px;
+    background:
+        linear-gradient(to right, #000 40%, transparent 40%) 0% 0% / 50% 50%,
+        linear-gradient(to right, transparent 60%, #000 60%) 100% 0% / 50% 50%,
+        linear-gradient(to bottom, #ff0000 50%, #0000ff 50%) 0% 0% / 50% 50%,
+        linear-gradient(to bottom, #00cc00 50%, #ffff00 50%) 100% 0% / 50% 50%;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    /* Remove complex shadow, rely on button border */
+    margin-right: 2px;
+}
+
+/* TASKBAR APPS AREA */
+.taskbar-apps {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    gap: 3px; /* Space between taskbar buttons */
+    margin-left: 4px; /* Space after start button */
+}
+
+/* TASKBAR APP BUTTONS */
+.taskbar-icon {
+    background: var(--win-bg-gray);
+    padding: 2px 8px;
+    height: 20px; /* Match button height */
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--win-border-light) var(--win-border-dark) var(--win-border-dark) var(--win-border-light); /* Outset */
+    box-shadow: 1px 1px 0 var(--win-border-black); /* Outer shadow */
+    font-size: 11pt;
+    font-weight: normal; /* Normal weight for app buttons */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: "MS Sans Serif", sans-serif;
+    max-width: 150px; /* Prevent excessive width */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.taskbar-icon:active {
+    border-color: var(--win-border-dark) var(--win-border-light) var(--win-border-light) var(--win-border-dark); /* Inset */
+    box-shadow: none;
+    background-color: #bbb;
+    padding: 3px 7px 1px 9px; /* Shift content */
+}
+
+/* Add icon style for taskbar buttons */
+.taskbar-icon span {
+    font-size: 16px; /* Emoji size */
+    margin-right: 4px;
+    line-height: 1; /* Adjust vertical alignment */
+}
+
+/* CLOCK AREA */
+.clock-area {
+    height: 22px; /* Height inside padding */
+    margin-left: 6px; /* Space before clock */
+    padding: 0 4px; /* Padding around clock text */
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--win-border-dark) var(--win-border-light) var(--win-border-light) var(--win-border-dark); /* Inset border */
+    box-shadow: inset 1px 1px 0 var(--win-border-black); /* Inner shadow */
+    display: flex;
+    align-items: center;
+}
+
+.clock {
+    padding: 2px 4px;
+    background: transparent; /* No extra background needed */
+    color: black;
+    font-size: 11pt;
+    text-shadow: none; /* No shadow */
+    white-space: nowrap; /* Prevent wrapping */
+}
+
+/* WINDOWS */
+.window {
+    position: absolute;
+    top: 30px; /* Default position */
+    left: 50px;
+    width: 500px; /* Default size */
+    height: 350px;
+    background: var(--win-bg-gray);
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--win-border-light) var(--win-border-dark) var(--win-border-dark) var(--win-border-light); /* Outset border */
+    box-shadow: 1px 1px 0 var(--win-border-black); /* Outer shadow */
+    display: none; /* Initially hidden */
+    flex-direction: column; /* Stack titlebar and content */
+    z-index: 10; /* Above desktop, below taskbar if active */
+}
+
+/* Active window appearance (Optional - for multiple windows later) */
+.window.active {
+    z-index: 50;
+}
+.window.active .window-titlebar {
+    background: var(--win-title-bar-active);
+    color: var(--win-title-text);
+}
+
+/* WINDOW TITLE BAR */
+.window-titlebar {
+    background: #808080; /* Inactive title bar color */
+    color: var(--win-bg-gray); /* Inactive text color */
+    padding: 3px 4px; /* Compact padding */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 11pt;
+    /* text-shadow: none; /* No shadow */
+    cursor: grab; /* Indicate draggable */
+    height: 18px; /* Fixed height */
+    line-height: 18px; /* Vertically center text */
+}
+.window-titlebar:active {
+    cursor: grabbing;
+}
+
+.window-title {
+    flex-grow: 1;
+    padding-left: 4px; /* Space after icon */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Small Icon in Title Bar (Placeholder) */
+.window-icon {
+    width: 16px;
+    height: 16px;
+    background: #eee; /* Placeholder background */
+    margin-right: 4px;
+    /* Later: Add specific icons */
+    display: inline-block; /* Needs display to show */
+     /* Basic placeholder icon */
+    background: linear-gradient(45deg, #fff 25%, #aaa 25%, #aaa 50%, #fff 50%, #fff 75%, #aaa 75%, #aaa 100%);
+    background-size: 8px 8px;
+    border: 1px solid var(--win-border-dark);
+}
+
+
+/* WINDOW BUTTONS (Minimize, Maximize, Close) */
+.window-buttons {
+    display: flex;
+    gap: 2px;
+}
+
+.window-buttons button {
+    background: var(--win-bg-gray);
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--win-border-light) var(--win-border-dark) var(--win-border-dark) var(--win-border-light); /* Outset */
+    box-shadow: 1px 1px 0 var(--win-border-black); /* Outer shadow */
+    color: black;
+    cursor: pointer;
+    font-size: 9pt; /* Small symbols */
+    font-weight: bold;
+    font-family: "Webdings", "Wingdings", sans-serif; /* Use symbol fonts */
+    width: 16px; /* Square buttons */
+    height: 14px;
+    line-height: 12px; /* Adjust symbol vertical position */
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1px; /* Small gap between buttons */
+}
+
+.window-buttons button:active {
+    border-color: var(--win-border-dark) var(--win-border-light) var(--win-border-light) var(--win-border-dark); /* Inset */
+    box-shadow: none;
+    background-color: #bbb;
+    padding-bottom: 1px; /* Simulate push */
+    padding-right: 1px;
+}
+
+/* WINDOW CONTENT AREA */
+/* *** MODIFIED: Added scanlines *** */
+.window-content {
+    flex-grow: 1; /* Take remaining space */
+    margin: 3px; /* Space between title bar/borders and content */
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--win-border-dark) var(--win-border-light) var(--win-border-light) var(--win-border-dark); /* Inset border */
+    box-shadow: inset 1px 1px 0 var(--win-border-black); /* Inner shadow */
+    background: white; /* Default content background */
+    overflow: hidden; /* Prevent iframe bleeding */
+    position: relative; /* For iframe positioning */
+    /* Subtle background scanlines */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    background-size: 1px 3px; /* Adjust size/opacity for subtlety */
+}
+
+/* IFRAME */
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block; /* Remove potential extra space */
+}
+
+/* Style for the active/pressed taskbar icon */
+.taskbar-icon.active {
+    border-color: var(--win-border-dark) var(--win-border-light) var(--win-border-light) var(--win-border-dark); /* Inset */
+    box-shadow: none;
+    background-color: #bbb; /* Slightly darker background */
+    padding: 3px 7px 1px 9px; /* Shift content slightly like :active */
+}
+
+/* *** NEW: Cryptic Glitch Styles *** */
+@keyframes text-glitch {
+  0% { text-shadow: 1px 1px magenta, -1px -1px cyan; opacity: 0.9; }
+  25% { text-shadow: none; opacity: 1; }
+  50% { text-shadow: -1px 1px lime, 1px -1px yellow; opacity: 0.85; }
+  75% { text-shadow: none; opacity: 1; }
+  100% { text-shadow: 1px -1px magenta, -1px 1px cyan; opacity: 0.9; }
+}
+
+/* Apply sparingly to headings or important messages in your HTML */
+/* Add the class="cryptic-glitch-text" to elements you want to glitch */
+.cryptic-glitch-text {
+  animation: text-glitch 3s infinite steps(2, jump-none);
+}
+/* *** END NEW STYLES *** */

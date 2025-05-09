@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Complete</title>
+    <link rel="stylesheet" href="win98-styles.css">
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        body { font-family: "Tahoma", "MS Sans Serif"; font-size: 11pt; background-color: var(--w98-bg-gray); display: flex; flex-direction: column; }
+        .content { padding: 30px 40px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; background-color: white; margin: 2px; border: 1px solid; border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark); box-shadow: inset 1px 1px 0 #808080;}
+        .icon { font-size: 48pt; margin-bottom: 10px; color: green; }
+        .message { font-weight: bold; font-size: 14pt; }
+        .sub-message { font-size: 10pt; color: #333; }
+        .ok-button { margin-top: 15px; padding: 6px 25px; }
+         .ok-button:focus { outline: 1px dotted var(--w98-text-black); outline-offset: -3px; }
+    </style>
+</head>
+<body>
+    <div class="w98-title-bar">
+        <span>System Notification</span>
+         <div class="w98-title-buttons">
+              {/* <!-- Optional: Could add a disabled close button --> */}
+         </div>
+    </div>
+    <div class="content">
+        <div class="icon">✅</div>
+        <p class="message">INTEGRATION COMPLETE</p>
+        <p class="sub-message">System synchronization successful. Welcome to the enhanced reality matrix.</p>
+        <button id="okButton" class="w98-button ok-button">OK</button>
+    </div>
+    <script>
+        const okButton = document.getElementById('okButton');
+        function proceed() {
+             console.log("Integration OK clicked. Reloading main application.");
+             // Reload the top-level window to restart the experience
+             window.top.location.reload();
+        }
+        okButton.addEventListener('click', proceed);
+         // Automatically proceed after a short delay as well
+         setTimeout(proceed, 7000); // 7 seconds
+         // Focus button on load
+         document.addEventListener('DOMContentLoaded', () => okButton.focus());
+         console.log("Integration Complete Popup Loaded");
+     </script>
+</body>
+</html>

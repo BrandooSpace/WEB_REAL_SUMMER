@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Viewer</title>
+    <link rel="stylesheet" href="win98-styles.css">
+    <style>
+        /* --- Page-Specific Styles --- */
+        html, body {
+            height: 100%; /* Ensure body takes full height */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body.win98-body { /* Apply base styles */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Start content at the top */
+            height: 100%; /* Ensure flex layout works */
+        }
+
+        /* Container for image to manage positioning context for glitch */
+        .image-container {
+            position: relative;
+            width: 100%; /* Allow container to take width */
+            /* ** MODIFICATION: Limit max-height significantly ** */
+            max-height: 45%; /* Adjust this percentage as needed */
+            margin-bottom: 15px;
+            display: flex; /* Center image within container */
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0; /* Prevent container from shrinking */
+        }
+
+        img#itemImage {
+            display: block;
+            max-width: 100%; /* Image fits container width */
+            max-height: 100%; /* Image fits container height */
+            min-height: 50px; /* Smaller min-height */
+            object-fit: contain;
+            border: 2px solid;
+            border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+            box-shadow: inset 1px 1px 0 var(--w98-border-black);
+            background-color: white;
+            padding: 5px;
+            image-rendering: pixelated;
+            background-color: #e0e0e0;
+        }
+        p#itemName {
+            margin: 0 0 5px 0; /* Reduced margin */
+            font-weight: bold; text-align: center; font-size: 11pt;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        p#compatibilityNote {
+            font-size: 8pt; color: #555; margin: 0 0 10px 0; /* Reduced margin */
+            text-align: center;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        /* --- Button Styles --- */
+        #buyButton {
+            font-size: 12pt; font-weight: bold; padding: 8px 20px;
+            animation-name: flashyColors; animation-duration: 0.7s;
+            animation-iteration-count: infinite; animation-timing-function: steps(1, end);
+            display: block;
+            margin-top: auto; /* Push button towards bottom if extra space */
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        #buyButton:active { padding: 9px 19px 7px 21px; }
+        @keyframes flashyColors {
+             0%   { background-color: #FF0000; color: white; } 15%  { background-color: #00FF00; color: black; }
+            30%   { background-color: #0000FF; color: white; } 45%  { background-color: #FFFF00; color: black; }
+            60%   { background-color: #FF00FF; color: white; } 75%  { background-color: #00FFFF; color: black; }
+            90%   { background-color: #FFFFFF; color: black; } 100% { background-color: var(--w98-bg-gray); color: black; }
+        }
+
+        /* --- Image Glitch Effect Styles --- */
+        .image-glitch {
+            position: relative;
+            overflow: hidden;
+        }
+        .image-glitch::before,
+        .image-glitch::after {
+            content: ''; position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: var(--glitch-bg-image);
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none; opacity: 0;
+        }
+        .image-glitch.active::before {
+            animation: glitch-anim-before 0.25s infinite steps(2, jump-none);
+            background-color: rgba(255, 0, 0, 0.3);
+            opacity: 0.8;
+        }
+        .image-glitch.active::after {
+            animation: glitch-anim-after 0.25s infinite steps(2, jump-none);
+            background-color: rgba(0, 0, 255, 0.3);
+            opacity: 0.8;
+        }
+
+        @keyframes glitch-anim-before {
+            0% { transform: translate(0); }
+            25% { transform: translate(4px, -2px) skewX(-5deg); }
+            50% { transform: translate(-3px, 3px) skewX(3deg); }
+            75% { transform: translate(2px, -4px) skewX(-2deg); }
+            100% { transform: translate(0); }
+        }
+        @keyframes glitch-anim-after {
+            0% { transform: translate(0); }
+            25% { transform: translate(-4px, 2px) skewX(4deg); }
+            50% { transform: translate(3px, -3px) skewX(-5deg); }
+            75% { transform: translate(-2px, 4px) skewX(2deg); }
+            100% { transform: translate(0); }
+        }
+        /* --- End Glitch Styles --- */
+
+    </style>
+</head>
+<body class="win98-body">
+    <div id="imageContainer" class="image-container">
+        <img id="itemImage" src="public/723design.png" alt="Loading merchandise design...">
+    </div>
+    <p id="itemName"></p>
+    <p id="compatibilityNote">Note: System Integration required for optimal use.</p>
+    <button id="buyButton" class="w98-button">BUY NOW $7.99</button>
+
+    <script>
+        let currentItemName = "Item";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            currentItemName = params.get('name') || "Acquired Asset";
+            const itemImageSrcFromUrl = params.get('image');
+            const pageTitle = currentItemName || "Item Viewer";
+
+            document.title = pageTitle;
+
+            const imgElement = document.getElementById('itemImage');
+            const imgContainer = document.getElementById('imageContainer');
+            const nameElement = document.getElementById('itemName');
+            const buyButton = document.getElementById('buyButton');
+
+            const defaultImageSrc = "public/723design.png";
+
+            if (nameElement) {
+                nameElement.textContent = currentItemName;
+            }
+
+            if (imgElement && imgContainer && buyButton) {
+                 imgElement.alt = `Merchandise Design: ${currentItemName}`;
+
+                 const targetSrc = itemImageSrcFromUrl ? decodeURIComponent(itemImageSrcFromUrl) : defaultImageSrc;
+                 const currentSrc = imgElement.getAttribute('src');
+
+                 if (targetSrc !== currentSrc) {
+                     console.log(`Image source needs update. Current: ${currentSrc}, Target: ${targetSrc}`);
+
+                     const glitchDuration = 1000; // ms - 1 second
+                     const swapDelay = 300; // ms - Wait before starting glitch
+
+                     setTimeout(() => {
+                         console.log("Applying glitch effect to default image...");
+                         imgContainer.style.setProperty('--glitch-bg-image', `url('${currentSrc}')`);
+                         imgContainer.classList.add('image-glitch', 'active');
+
+                         setTimeout(() => {
+                             console.log("Removing glitch effect and swapping image.");
+                             imgContainer.classList.remove('active');
+                             imgElement.src = targetSrc;
+                         }, glitchDuration);
+
+                     }, swapDelay);
+
+                 } else {
+                     console.log(`Image source is already the target: ${currentSrc}`);
+                     imgElement.alt = `Merchandise Design: ${currentItemName}`;
+                 }
+            }
+
+            if (buyButton) {
+                buyButton.addEventListener('click', () => {
+                    console.log(`Buy button clicked for: ${currentItemName}. Sending message to parent.`);
+                    window.parent.postMessage({
+                        type: 'openPurchaseScreen',
+                        payload: {
+                            name: currentItemName,
+                            image: imgElement ? encodeURIComponent(imgElement.src) : null
+                        }
+                    }, '*');
+                });
+            }
+        });
+    </script>
+<script>
+    document.addEventListener('click', function(event) {
+      // Check if the clicked element is a button, link, or inside certain interactive areas
+      if (event.target.closest('button, a, .sidebar a, .file-list-table tbody tr, .folder-list-pane li, .email-list-table tbody tr')) {
+        // Optionally add more specific checks if needed
+        console.log('Interaction click detected in iframe:', event.target.tagName, event.target.textContent?.substring(0, 20));
+        window.parent.postMessage({ type: 'userInteractionClick' }, '*');
+      }
+    }, true); // Use capture phase to catch clicks early
+  </script>
+  </body>
+</html>

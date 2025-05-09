@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search - Windows 98 Internet</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: "MS Sans Serif", Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      flex-grow: 1;
+      background: silver;
+      border: 3px solid black;
+      width: 80%;
+      max-width: 900px;
+      margin: 20px;
+      margin-top: 20px;
+      box-shadow: 5px 5px black;
+    }
+
+    .sidebar {
+      width: 200px;
+      background: #c0c0c0;
+      border-right: 3px solid black;
+      padding: 10px;
+    }
+
+    .sidebar h2 {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .sidebar a {
+      display: block;
+      background: silver;
+      padding: 5px;
+      margin-bottom: 5px;
+      text-decoration: none;
+      color: black;
+      font-size: 22px;
+      border: 2px outset white;
+      text-align: center;
+    }
+
+    .sidebar a:hover {
+      background: gray;
+    }
+
+    .content {
+      padding: 20px;
+      flex-grow: 1;
+      background: white;
+    }
+
+    .content h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .search-box {
+      position: relative;
+      margin-top: 10px;
+    }
+
+    .search-box input {
+      width: 100%;
+      font-size: 18px;
+      padding: 8px;
+      border: 2px inset gray;
+      font-family: "MS Sans Serif", Arial, sans-serif;
+    }
+
+    .dropdown {
+      position: absolute;
+      top: 40px;
+      left: 0;
+      width: 100%;
+      background: white;
+      border: 2px outset #c0c0c0;
+      display: none;
+      z-index: 100;
+    }
+
+    .dropdown a {
+      display: block;
+      padding: 8px;
+      font-size: 18px;
+      text-decoration: none;
+      color: black;
+    }
+
+    .dropdown a:hover {
+      background-color: #c0c0c0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="sidebar">
+      <h2>Navigation</h2>
+      <a href="home.html">🏠 Home</a>
+      <a href="apparel.html">👕 Apparel</a>
+      <a href="about.html">ℹ About</a>
+    </div>
+
+    <div class="content">
+      <h1>Internet Explorer Search</h1>
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="Search Windows 98 Web..."
+          onfocus="showDropdown()"
+          onblur="hideDropdownDelayed()"
+        />
+        <div class="dropdown" id="searchDropdown">
+          <a href="home.html">🏠 Home</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const dropdown = document.getElementById("searchDropdown");
+
+    function showDropdown() {
+      dropdown.style.display = "block";
+    }
+
+    function hideDropdownDelayed() {
+      setTimeout(() => {
+        dropdown.style.display = "none";
+      }, 200); // allows time to click a link
+    }
+  </script>
+
+</body>
+</html>

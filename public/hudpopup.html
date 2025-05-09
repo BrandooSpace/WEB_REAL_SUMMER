@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>*** System Notification ***</title>
+    <link rel="stylesheet" href="win98-styles.css">
+    <style>
+        /* --- Page-Specific Styles --- */
+        :root {
+            /* Colors for flashing text */
+            --flash-color-1: #FF0000; --flash-color-2: #00FF00;
+            --flash-color-3: #0000FF; --flash-color-4: #FFFF00;
+            --flash-color-5: #FF00FF; --flash-color-6: #00FFFF;
+            /* ** NEW: Colors for button flash ** */
+            --button-flash-bg-1: var(--w98-highlight); /* Navy */
+            --button-flash-text-1: var(--w98-highlight-text); /* White */
+            --button-flash-bg-2: var(--w98-exciting-red); /* Red */
+            --button-flash-text-2: var(--w98-highlight-text); /* White */
+            --button-flash-bg-3: #FFFF00; /* Yellow */
+            --button-flash-text-3: var(--w98-text-black); /* Black */
+        }
+
+        html, body {
+            margin: 0; padding: 0; height: 100%; overflow: hidden;
+            font-family: "Tahoma", "MS Sans Serif", Arial, sans-serif;
+            background-color: transparent; /* Keep body transparent */
+        }
+
+        .popup-container {
+            width: 100%; height: 100%; display: flex; flex-direction: column;
+            box-sizing: border-box; background-color: var(--w98-bg-gray);
+        }
+
+        /* --- Popup Content Area --- */
+        .popup-content {
+            padding: 15px; background-color: white; flex-grow: 1; overflow: hidden;
+            /* Apply sunken border */
+            border: 1px solid;
+            border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+            box-shadow: inset 1px 1px 0 #808080;
+            margin: 2px 3px 3px 3px; display: flex; flex-direction: column;
+            justify-content: space-around; align-items: center; text-align: center;
+        }
+
+        /* --- Flashing Text Styling --- */
+        .flashing-text {
+            margin: 15px 0; font-size: 16pt; font-weight: bold; line-height: 1.4;
+            text-transform: uppercase; animation: colorFlash 1s infinite steps(1, end);
+        }
+        @keyframes colorFlash {
+            0%   { color: var(--flash-color-1); } 17%  { color: var(--flash-color-2); }
+            34%  { color: var(--flash-color-3); } 51%  { color: var(--flash-color-4); }
+            68%  { color: var(--flash-color-5); } 85%  { color: var(--flash-color-6); }
+            100% { color: var(--flash-color-1); }
+        }
+
+        /* --- Button Styles --- */
+        .action-button { /* Uses w98-button base */
+            padding: 8px 20px; font-size: 12pt; font-weight: bold;
+            margin-top: 20px; flex-shrink: 0;
+            /* ** NEW: Add flashing animation ** */
+            animation: buttonFlash 0.8s infinite steps(1, end);
+        }
+        .action-button:active { /* Keep specific active padding */
+             padding: 9px 19px 7px 21px;
+             /* ** NEW: Stop animation on click ** */
+             animation: none;
+        }
+        /* ** NEW: Button Flashing Animation ** */
+        @keyframes buttonFlash {
+            0%   { background-color: var(--button-flash-bg-1); color: var(--button-flash-text-1); border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light); box-shadow: 1px 1px 0 var(--w98-border-black); }
+            33%  { background-color: var(--button-flash-bg-2); color: var(--button-flash-text-2); border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light); box-shadow: 1px 1px 0 var(--w98-border-black); }
+            66%  { background-color: var(--button-flash-bg-3); color: var(--button-flash-text-3); border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark); box-shadow: none; } /* Inset look */
+            100% { background-color: var(--button-flash-bg-1); color: var(--button-flash-text-1); border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light); box-shadow: 1px 1px 0 var(--w98-border-black); }
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="popup-container">
+        <div class="w98-title-bar">
+            <span>System Notification</span>
+            <div class="w98-title-buttons">
+                <button title="Close" onclick="window.parent.postMessage({type: 'closeAdPopup'}, '*')">r</button>
+            </div>
+        </div>
+        <div class="popup-content">
+            <p class="flashing-text">CONGRATULATIONS ON CHOOSING TO INTEGRATE!</p>
+
+            <button id="subscriptionButton" class="w98-button action-button" onclick="handleSubscriptionClick()">
+                BUY INTEGRATION SUBSCRIPTION (required)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function handleSubscriptionClick() {
+            console.log("Integration Subscription button clicked! Sending message to parent.");
+            window.parent.postMessage({ type: 'loadSubscriptionPage' }, '*');
+            const button = document.getElementById('subscriptionButton');
+            if(button) {
+                button.disabled = true;
+                button.style.opacity = '0.6';
+                button.style.cursor = 'default';
+                button.style.animation = 'none'; // Stop flashing when clicked/disabled
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const appearance = params.get('appearance');
+            const button = document.getElementById('subscriptionButton');
+            if (appearance === 'second' && button) {
+                console.log("Second appearance detected. Changing button text.");
+                button.textContent = "SUBSCRIPTION REQUIRED";
+            } else {
+                 console.log("First appearance or no appearance parameter found.");
+            }
+        });
+
+        console.log("HUD Congratulations Pop-up (hudpopup.html) Loaded.");
+    </script>
+<script>
+    document.addEventListener('click', function(event) {
+      // Check if the clicked element is a button, link, or inside certain interactive areas
+      if (event.target.closest('button, a, .sidebar a, .file-list-table tbody tr, .folder-list-pane li, .email-list-table tbody tr')) {
+        // Optionally add more specific checks if needed
+        console.log('Interaction click detected in iframe:', event.target.tagName, event.target.textContent?.substring(0, 20));
+        window.parent.postMessage({ type: 'userInteractionClick' }, '*');
+      }
+    }, true); // Use capture phase to catch clicks early
+  </script>
+  </body>
+</html>

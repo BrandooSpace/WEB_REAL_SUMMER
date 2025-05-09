@@ -1,0 +1,186 @@
+/* win98-styles.css */
+/* Consolidated Win98 UI Styles */
+
+/* --- Core Variables --- */
+:root {
+    --w98-bg-gray: #C0C0C0;
+    --w98-border-light: #FFFFFF;
+    --w98-border-dark: #808080;
+    --w98-border-black: #000000;
+    --w98-text-black: #000000;
+    --w98-highlight: #000080; /* Navy selection / Active Title */
+    --w98-highlight-text: #FFFFFF;
+    --w98-link-blue: #0000FF;
+    --w98-link-visited: #800080;
+    --w98-title-bar-inactive: #808080;
+    --w98-title-text-inactive: #C0C0C0;
+    --w98-button-text: #000000;
+    --w98-button-shadow: #000000;
+    --w98-exciting-red: #FF0000; /* For emphasis */
+}
+
+/* --- Basic Body Setup (Common for iframe content) --- */
+body.win98-body {
+    font-family: "Tahoma", "MS Sans Serif", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--w98-bg-gray);
+    color: var(--w98-text-black);
+    font-size: 10pt; /* Adjusted default */
+}
+
+/* --- Common Border Styles --- */
+.w98-border-raised {
+    border: 1px solid;
+    border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light);
+    box-shadow: 1px 1px 0 var(--w98-border-black);
+}
+
+.w98-border-sunken {
+    border: 1px solid;
+    border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+    box-shadow: inset 1px 1px 0 var(--w98-border-black);
+}
+
+.w98-border-window-content {
+    border: 1px solid;
+    border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+    box-shadow: inset 1px 1px 0 #808080; /* Specific inner shadow */
+    background-color: white; /* Default content background */
+}
+
+/* --- Common Button Styles --- */
+.w98-button {
+    background: var(--w98-bg-gray);
+    border: 1px solid;
+    border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light); /* Outset */
+    box-shadow: 1px 1px 0 var(--w98-button-shadow);
+    padding: 5px 12px; /* Default padding */
+    font-family: "MS Sans Serif", sans-serif;
+    font-size: 10pt; /* Default size */
+    color: var(--w98-button-text);
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    transition: background-color 0.1s ease-out, padding 0.1s ease-out, border-color 0.1s ease-out;
+}
+
+.w98-button:active {
+    border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark); /* Inset */
+    box-shadow: none;
+    background-color: #bbb; /* Slightly darker */
+    /* Nudge effect - adjust padding slightly */
+    padding: 6px 11px 4px 13px;
+}
+
+.w98-button:disabled {
+    color: var(--w98-border-dark);
+    text-shadow: 1px 1px 0 var(--w98-border-light);
+    cursor: default;
+    border-color: var(--w98-bg-gray);
+    box-shadow: none;
+    padding: 5px 12px; /* Reset padding */
+}
+
+/* --- Common Title Bar Style (for popups) --- */
+.w98-title-bar {
+    background-color: var(--w98-highlight); /* Active color */
+    color: var(--w98-highlight-text);
+    padding: 2px 5px;
+    font-weight: bold;
+    font-size: 9pt;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 18px;
+    flex-shrink: 0;
+    cursor: default;
+    margin: 1px 1px 0 1px; /* Fit within parent padding */
+}
+
+.w98-title-bar span { /* Title text */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.w98-title-buttons button {
+    background-color: var(--w98-bg-gray);
+    border: 1px solid;
+    border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light);
+    box-shadow: 1px 1px 0 var(--w98-border-black);
+    color: var(--w98-text-black);
+    font-family: "Marlett", "Webdings", sans-serif; /* Symbol font */
+    font-size: 8pt;
+    font-weight: bold;
+    width: 16px;
+    height: 14px;
+    padding: 0;
+    line-height: 14px;
+    text-align: center;
+    cursor: pointer;
+}
+.w98-title-buttons button:active {
+    border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+    box-shadow: none;
+}
+
+/* --- Common Link Styles --- */
+a.w98-link {
+    color: var(--w98-link-blue);
+    text-decoration: underline;
+    cursor: pointer;
+}
+a.w98-link:visited {
+    color: var(--w98-link-visited);
+}
+a.w98-link:hover {
+    color: var(--w98-exciting-red);
+}
+
+/* --- Common Content Area Padding/Margin --- */
+.w98-content-padding {
+    padding: 15px 20px;
+}
+
+.w98-content-margin {
+     margin: 2px;
+}
+
+/* --- Common Font Sizes --- */
+.w98-text-sm { font-size: 8pt; }
+.w98-text-md { font-size: 10pt; }
+.w98-text-lg { font-size: 11pt; }
+.w98-text-xl { font-size: 12pt; }
+
+/* **** NEW: Subtle Glitch/Flicker Animations **** */
+@keyframes subtle-icon-glitch {
+  0%, 100% { transform: translate(0, 0); }
+  49% { transform: translate(0, 0); }
+  50% { transform: translate(1px, -1px); filter: hue-rotate(10deg); }
+  51% { transform: translate(0, 0); filter: none; }
+  74% { transform: translate(0, 0); }
+  75% { transform: translate(-1px, 1px); filter: contrast(1.2); }
+  76% { transform: translate(0, 0); filter: none; }
+}
+
+.icon-subtle-glitch {
+  animation: subtle-icon-glitch 8s infinite steps(1, end);
+}
+
+@keyframes subtle-wallpaper-flicker {
+   0%, 100% { filter: brightness(1); }
+   49.5% { filter: brightness(1); }
+   50% { filter: brightness(0.95) contrast(1.1); }
+   50.5% { filter: brightness(1); }
+}
+
+.wallpaper-subtle-flicker {
+   /* Apply this class to the body or a wrapper div */
+   animation: subtle-wallpaper-flicker 15s infinite linear;
+}
+
+/* Add other common elements as needed */
+/* e.g., common sidebar styles, table styles, form input styles */

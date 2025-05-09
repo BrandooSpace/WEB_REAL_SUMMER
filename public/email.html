@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inbox - Unit Designation: USER</title>
+<link rel="stylesheet" href="win98-styles.css">
+<style>
+/* --- Page-Specific Styles --- */
+html, body {
+height: 100%;
+margin: 0;
+padding: 0;
+overflow: hidden;
+}
+body {
+/* Inherits base from win98-styles.css via class */
+display: flex;
+flex-direction: column;
+}
+/* --- Toolbar Area --- */
+.email-toolbar {
+    background: var(--w98-bg-gray);
+    padding: 3px 4px;
+    border-bottom: 1px solid var(--w98-border-dark);
+    box-shadow: 0 1px 0 var(--w98-border-light);
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+    height: 32px;
+    align-items: center;
+}
+.email-toolbar button { /* Uses w98-button base */
+    padding: 3px 5px;
+    font-size: 9pt;
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    /* Make border transparent initially for hover effect */
+    border: 1px solid transparent;
+    box-shadow: none; /* Remove default button shadow */
+}
+.email-toolbar button:hover { /* Apply raised border on hover */
+     border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light);
+     box-shadow: 1px 1px 0 var(--w98-border-black);
+}
+.email-toolbar button:active { /* Keep specific active padding */
+    border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+    box-shadow: none;
+    padding: 4px 4px 2px 6px;
+}
+.email-toolbar .separator {
+    width: 1px;
+    height: 24px;
+    background-color: var(--w98-border-dark);
+    box-shadow: 1px 0 0 var(--w98-border-light);
+    margin: 0 4px;
+}
+/* Icons remain the same */
+.icon-new::before { content: "✉️"; margin-right: 4px; }
+.icon-reply::before { content: "↩️"; margin-right: 4px; }
+.icon-replyall::before { content: "👥"; margin-right: 4px; }
+.icon-forward::before { content: "↪️"; margin-right: 4px; }
+.icon-delete::before { content: "❌"; margin-right: 4px; }
+.icon-prev::before { content: "🔼"; }
+.icon-next::before { content: "🔽"; }
+
+/* --- Main Area --- */
+.main-area {
+    flex-grow: 1;
+    display: flex;
+    min-height: 0;
+    padding: 4px;
+    gap: 4px;
+    position: relative; /* Needed for modal positioning */
+}
+
+/* --- Folder List Pane --- */
+.folder-list-pane {
+    width: 173px;
+    flex-shrink: 0;
+    background-color: white;
+    overflow-y: auto;
+    padding: 6px;
+    font-size: 10pt;
+}
+.folder-list-pane ul { list-style: none; padding: 0; margin: 0; }
+.folder-list-pane li { padding: 4px 6px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+.folder-list-pane li.selected { background-color: var(--w98-highlight); color: var(--w98-highlight-text); }
+.folder-list-pane li::before { content: "📁"; font-size: 12pt; display: inline-block; width: 20px; }
+.folder-list-pane li.inbox::before { content: "📥"; }
+.folder-list-pane li.outbox::before { content: "📤"; }
+.folder-list-pane li.sent::before { content: "✔️"; }
+.folder-list-pane li.trash::before { content: "🗑️"; }
+
+/* --- Content Area --- */
+.content-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 4px;
+}
+
+/* --- Inbox List Pane --- */
+.inbox-list-pane {
+    height: 207px; /* Adjusted height */
+    flex-shrink: 0;
+    overflow-y: auto;
+    background-color: white;
+}
+.email-list-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+.email-list-table thead th {
+    background: var(--w98-bg-gray); padding: 4px 7px; text-align: left; font-weight: normal;
+    position: sticky; top: 0; z-index: 1;
+    border: 1px solid; border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light);
+    box-shadow: 1px 1px 0 var(--w98-border-black); cursor: default;
+}
+.email-list-table thead th:active {
+     border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark);
+     box-shadow: none; padding: 5px 6px 3px 8px;
+}
+.email-list-table tbody tr { cursor: pointer; }
+.email-list-table tbody tr.selected { background-color: var(--w98-highlight); color: var(--w98-highlight-text); }
+.email-list-table tbody tr.selected td { color: var(--w98-highlight-text); }
+.email-list-table tbody td {
+    padding: 4px 7px; border-bottom: 1px solid #eee; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; height: 21px; line-height: 1.3;
+    vertical-align: middle;
+}
+.col-icon { width: 23px; text-align: center; }
+.col-attach { width: 23px; text-align: center; }
+.col-flag { width: 23px; text-align: center; }
+.col-from { width: 138px; }
+.col-subject { width: auto; }
+.col-received { width: 127px; }
+
+/* Read/Unread Styles & Flashing Notification */
+.email-item[data-read="true"] { font-weight: normal; }
+.email-item[data-read="false"] { font-weight: bold; }
+@keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.email-item.flashing-notification[data-read="false"] .col-icon::before {
+  content: "●"; color: var(--w98-exciting-red); font-weight: bold; font-size: 14pt;
+  line-height: 1; display: inline-block; animation: flash 1.2s infinite step-end;
+}
+.email-item:not(.flashing-notification)[data-read="false"] .col-icon::before {
+     content: "!"; color: var(--w98-exciting-red); font-weight: bold; font-size: 10pt;
+     line-height: 1; display: inline-block; animation: none;
+}
+.email-item[data-read="true"] .col-icon::before { content: ""; animation: none; }
+
+/* --- Email Preview Pane --- */
+.email-preview-pane {
+    flex-grow: 1; min-height: 0; background-color: white; overflow-y: auto;
+    display: flex; flex-direction: column;
+}
+.email-preview-header {
+    background-color: var(--w98-bg-gray); padding: 6px 12px;
+    border-bottom: 1px solid var(--w98-border-dark);
+    box-shadow: 0 1px 0 var(--w98-border-light); font-size: 9pt; flex-shrink: 0;
+}
+.email-preview-header strong { display: inline-block; width: 60px; color: #555; }
+.email-preview-content {
+    padding: 17px 23px; font-family: "Times New Roman", serif; font-size: 12pt;
+    line-height: 1.5; flex-grow: 1; overflow-y: auto;
+}
+.email-preview-pane .placeholder {
+     color: #666; font-style: italic; text-align: center; margin: auto;
+     font-family: "Tahoma", "MS Sans Serif", sans-serif; font-size: 10pt;
+}
+/* Specific content styles */
+.email-preview-content h1 { font-size: 18pt; color: var(--w98-exciting-red); margin: 12px 0; font-weight: bold; text-transform: uppercase; animation: text-pulse 1s infinite alternate; text-align: center; font-family: "Comic Sans MS", cursive, sans-serif; }
+.email-preview-content p { margin-top: 0; margin-bottom: 1.15em; font-size: 13pt; /*text-align: center;*/ font-family: "Comic Sans MS", cursive, sans-serif; }
+.email-preview-content strong { color: var(--w98-highlight); font-weight: bold; }
+.email-preview-content .blink { animation: blinker 1s linear infinite; }
+.email-preview-content ul { list-style: disc; margin-left: 35px; text-align: left; }
+.email-preview-content hr { border: none; border-top: 1px dashed blue; margin: 12px 0; }
+@keyframes text-pulse { from { transform: scale(1); } to { transform: scale(1.02); } }
+@keyframes link-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+@keyframes blinker { 50% { opacity: 0; } }
+
+/* --- Status Bar --- */
+.email-statusbar {
+    background: var(--w98-bg-gray); padding: 1px 7px;
+    border-top: 1px solid var(--w98-border-light); font-size: 9pt;
+    color: var(--w98-text-black); flex-shrink: 0; height: 18px;
+    line-height: 18px; text-align: left;
+}
+
+/* --- Custom Delete Confirmation Modal --- */
+.modal-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 100;
+}
+.modal-box {
+    background-color: var(--w98-bg-gray);
+    padding: 15px 20px;
+    min-width: 250px; max-width: 400px;
+    text-align: center;
+}
+.modal-box p {
+    margin: 0 0 15px 0; font-size: 9pt; text-align: left;
+    display: flex; align-items: center;
+}
+.modal-box p::before { /* Question mark icon */
+    content: '?'; display: inline-block; background-color: blue; color: white;
+    font-weight: bold; border-radius: 50%; width: 20px; height: 20px;
+    line-height: 20px; text-align: center; margin-right: 10px; flex-shrink: 0;
+}
+.modal-buttons { display: flex; justify-content: center; gap: 10px; }
+.modal-buttons button { /* Uses w98-button base */
+    padding: 5px 15px;
+    font-size: 9pt;
+    min-width: 70px;
+}
+.modal-buttons button:hover { /* Keep hover simple */
+     border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light);
+     filter: brightness(1.05);
+}
+.modal-buttons button.confirm-yes:focus { /* Add focus style */
+     outline: 1px dotted var(--w98-text-black);
+     outline-offset: -3px;
+}
+.modal-hidden { display: none; }
+.modal-visible { display: flex; }
+
+</style>
+</head>
+<body class="win98-body">
+<div class="email-toolbar">
+<button title="New Message" class="w98-button icon-new" disabled>New</button>
+<button title="Reply" class="w98-button icon-reply" disabled>Reply</button>
+<button title="Reply to All" class="w98-button icon-replyall" disabled>Reply All</button>
+<button title="Forward" class="w98-button icon-forward" disabled>Forward</button>
+<div class="separator"></div>
+<button title="Delete" class="w98-button icon-delete" id="deleteButton">Delete</button>
+<div class="separator"></div>
+<button title="Previous Message" class="w98-button icon-prev" disabled></button>
+<button title="Next Message" class="w98-button icon-next" disabled></button>
+</div>
+<div class="main-area">
+<div class="folder-list-pane w98-border-sunken">
+<ul>
+<li class="inbox selected" data-folder="inbox">Inbox</li>
+<li class="outbox" data-folder="outbox">Outbox</li>
+<li class="sent" data-folder="sent">Sent Items</li>
+<li class="trash" data-folder="trash">Deleted Items</li>
+</ul>
+</div>
+<div class="content-area">
+    <div class="inbox-list-pane w98-border-window-content">
+        <table class="email-list-table">
+            <thead>
+                <tr>
+                    <th class="col-icon" title="Priority">!</th>
+                    <th class="col-attach" title="Attachment">📎</th>
+                    <th class="col-flag" title="Flag Status">⚐</th>
+                    <th class="col-from">From</th>
+                    <th class="col-subject">Subject</th>
+                    <th class="col-received">Received</th>
+                </tr>
+            </thead>
+            <tbody id="emailListBody">
+                <!-- AD EMAIL -->
+                <tr class="email-item flashing-notification" data-read="false" data-from="System Compliance Authority" data-subject="ALERT: Action Required - Compliance Status CRITICAL" id="adEmailRow">
+                    <td class="col-icon"></td> <td class="col-attach"></td> <td class="col-flag"></td> <td class="col-from">System Compliance Authority</td>
+                    <td class="col-subject">ALERT: Action Required - Compliance Status CRITICAL</td>
+                    <td class="col-received">Thu 4/28/2025 01:44 AM</td>
+                    <td style="display:none;" class="email-content-data">
+                        <h1><span style="color: blue;">SYSTEM ALERT!</span> Action Required!</h1>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Your current physical interface (apparel) is <strong style="color: var(--w98-exciting-red);">OUTDATED</strong>. Failure to upgrade WILL result in suboptimal reality synchronization and potential de-resolution.</p>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Prepare for <strong style="font-size: 12pt;">TOTAL INTEGRATION</strong> with our latest line of system-compliant wearables!</p>
+                        <p style="font-size: 14pt; color: var(--w98-exciting-red); font-weight: bold; text-align: center;">🔥 IMMEDIATE COMPLIANCE NECESSARY! 🔥<br><a class="w98-link postlink" onclick="navigateToBrowser('apparel.html')">CLICK HERE for MANDATORY APPAREL</a> synchronization!</p>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Our <strong style="text-decoration: underline;">EXCLUSIVE</strong> collection ensures seamless connection:</p>
+                        <ul style="font-family: 'Tahoma', sans-serif; font-size: 10pt;"><li>Cyber-Enhanced T-Shirts (Req. Neural Link v2.1+)</li><li>Holographic Hoodies (Mandatory Visual Feed Integration)</li><li>Data-Stream Hats (Continuous Upload Enabled)</li></ul>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Delay is <strong class="blink">NOT AN OPTION!</strong> System penalties automatically apply!</p>
+                        <p style="font-size: 12pt; text-align: center;">➡️ <a class="w98-link postlink" onclick="navigateToBrowser('apparel.html')">Visit the Compliance Zone NOW!</a> ⬅️</p>
+                        <hr style="border-top: 1px dashed blue;">
+                        <p style="font-size: 8pt; color: #555; text-align: left;">Brought to you by MegaCorp - Integrating Your Life™. <br>Terms of Service update 11.3c automatically accepted by reading this message. Non-compliance incurs immediate resource reallocation.</p>
+                    </td>
+                </tr>
+                <!-- NEW EMAIL 1: Performance Warning -->
+                <tr class="email-item" data-read="false" data-from="System Diagnostics" data-subject="Performance Warning: Suboptimal System Operation Detected">
+                    <td class="col-icon"></td> <td class="col-attach"></td> <td class="col-flag">⚐</td> <td class="col-from">System Diagnostics</td>
+                    <td class="col-subject">Performance Warning: Suboptimal System Operation Detected</td>
+                    <td class="col-received">Wed 4/27/2025 11:05 AM</td>
+                    <td style="display:none;" class="email-content-data">
+                        <h1 style="font-family: 'Courier New', monospace; color: #D2691E; font-size: 14pt;">WARNING: System Degradation Detected</h1>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Unit USER, our automated diagnostics have detected significant performance degradation in your current operational environment. Processing efficiency is below minimum thresholds (Current: 78.4%, Required: 95.0%).</p>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Observed Symptoms:</p>
+                        <ul style="font-family: 'Tahoma', sans-serif; font-size: 9pt;">
+                            <li>Increased latency in response times.</li>
+                            <li>Potential visual artifacting or instability.</li>
+                            <li>Reduced data throughput.</li>
+                        </ul>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">This typically indicates a lack of full system integration. Standard diagnostic protocols are insufficient for non-integrated units.</p>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 11pt; text-align: left;"><strong>Recommendation:</strong> Initiate system integration via the <strong style="color: var(--w98-highlight);">Synergy Portal</strong> immediately to restore optimal performance and prevent further degradation.</p>
+                        <!-- FIX: Removed >> and << from link text -->
+                        <p style="text-align: center;"><a class="w98-link postlink" onclick="navigateToBrowser('computervision.html')" style="font-weight: bold;"> Access Synergy Portal Now </a></p>
+                        <hr>
+                        <p style="font-size: 8pt; color: #666;">SYS_DIAG v4.1. Error Code: 0xEFFICIENCY_LOW. Your cooperation ensures continued operational stability.</p>
+                    </td>
+                </tr>
+                <!-- NEW EMAIL 2: Security Alert -->
+                <tr class="email-item" data-read="false" data-from="Security Center" data-subject="URGENT: Security Vulnerability Detected - Integration Required">
+                    <td class="col-icon"></td> <td class="col-attach"></td> <td class="col-flag"></td> <td class="col-from">Security Center</td>
+                    <td class="col-subject">URGENT: Security Vulnerability Detected - Integration Required</td>
+                    <td class="col-received">Wed 4/27/2025 02:30 PM</td>
+                    <td style="display:none;" class="email-content-data">
+                        <h1 style="font-family: 'Impact', sans-serif; color: var(--w98-exciting-red); font-size: 16pt;">!! SECURITY ALERT !!</h1>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Unit USER, a critical security vulnerability has been identified within your legacy operational framework (Non-Integrated Status).</p>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;"><strong>Threat Vector:</strong> Unsecured Data Channels (External Exposure Risk)</p>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Standard security patches cannot be deployed effectively without full system integration. Your current state poses a significant risk to network integrity and personal data coherence.</p>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 11pt; text-align: left; color: var(--w98-exciting-red); font-weight: bold;">Immediate action is required to mitigate this risk.</p>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;"><strong>Solution:</strong> Complete the mandatory integration process via the <strong style="color: var(--w98-highlight);">Synergy Portal</strong>. This will deploy the necessary security protocols and seal the identified vulnerabilities.</p>
+                        <!-- FIX: Removed >> and << from link text -->
+                        <p style="text-align: center;"><a class="w98-link postlink" onclick="navigateToBrowser('computervision.html')" style="font-weight: bold; font-size: 12pt; color: var(--w98-exciting-red);"> SECURE YOUR SYSTEM - INTEGRATE NOW </a></p>
+                        <hr style="border-color: var(--w98-exciting-red);">
+                        <p style="font-size: 8pt; color: #666;">SEC_ALERT ID: VULN_NONINTG_0034B. Failure to comply may result in automatic quarantine protocols being initiated.</p>
+                    </td>
+                </tr>
+                <!-- Existing Email 1 -->
+                <tr class="email-item" data-read="true" data-from="Support Team" data-subject="Re: System Maintenance Notification">
+                    <td class="col-icon"></td> <td class="col-attach">📎</td> <td class="col-flag"></td> <td class="col-from">Support Team</td>
+                    <td class="col-subject">Re: System Maintenance Notification</td> <td class="col-received">Wed 4/27/2025 09:15 AM</td>
+                    <td style="display:none;" class="email-content-data"> <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Dear User,</p> <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">This is a follow-up regarding the scheduled system maintenance. The maintenance was completed successfully.</p> <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Thank you,<br>Support Team</p> </td>
+                </tr>
+                <!-- Existing Email 2 -->
+                <tr class="email-item" data-read="false" data-from="Newsletter Bot" data-subject="Weekly Tech Roundup - April Week 4">
+                    <td class="col-icon"></td> <td class="col-attach"></td> <td class="col-flag">⚐</td> <td class="col-from">Newsletter Bot</td>
+                    <td class="col-subject">Weekly Tech Roundup - April Week 4</td> <td class="col-received">Mon 4/25/2025 08:00 AM</td>
+                    <td style="display:none;" class="email-content-data"> <h1 style="font-family: 'Arial', sans-serif; color: #333; font-size: 14pt;">Tech Roundup</h1> <p style="font-family: 'Arial', sans-serif; font-size: 10pt; text-align: left;">This week's top stories...</p> <ul style="font-family: 'Arial', sans-serif; font-size: 10pt;"><li>New Gadget Released!</li><li>Software Update Analysis</li><li>Industry News</li></ul> <p style="font-family: 'Arial', sans-serif; font-size: 10pt; text-align: left;"><a class="w98-link postlink" onclick="alert('Link clicked! Implement navigation.')">Read more...</a></p> </td>
+                </tr>
+                <!-- NEW EMAIL 3: Missing Components -->
+                <tr class="email-item" data-read="false" data-from="System Integrity Monitor" data-subject="Error: Required System Components Missing">
+                    <td class="col-icon"></td> <td class="col-attach"></td> <td class="col-flag"></td> <td class="col-from">System Integrity Monitor</td>
+                    <td class="col-subject">Error: Required System Components Missing</td>
+                    <td class="col-received">Thu 4/28/2025 09:00 AM</td>
+                    <td style="display:none;" class="email-content-data">
+                        <h1 style="font-family: 'Courier New', monospace; color: #FF4500; font-size: 14pt;">SYS_INTEGRITY_CHECK: FAILED</h1>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Unit USER, the routine system integrity check has detected missing core components essential for optimal functionality within the current network parameters.</p>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">Missing Components:</p>
+                        <ul style="font-family: 'Courier New', monospace; font-size: 9pt; color: #555;">
+                            <li>neural_sync_driver.dll (Version 3.0+)</li>
+                            <li>reality_filter_core.sys</li>
+                            <li>cognitive_bias_adjuster.cfg</li>
+                        </ul>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 10pt; text-align: left;">These components are automatically installed and managed via the full system integration process. Attempting manual installation is unsupported and may lead to system instability or profile corruption.</p>
+                        <p style="font-family: 'Tahoma', sans-serif; font-size: 11pt; text-align: left;"><strong>Action Required:</strong> Access the <strong style="color: var(--w98-highlight);">Synergy Portal</strong> to initiate the integration process and install the required components.</p>
+                        <!-- FIX: Removed >> and << from link text -->
+                        <p style="text-align: center;"><a class="w98-link postlink" onclick="navigateToBrowser('computervision.html')" style="font-weight: bold;"> Install Missing Components via Synergy Portal </a></p>
+                        <hr>
+                        <p style="font-size: 8pt; color: #666;">Ref: SYS_INT_FAIL_MISSINGCOMP. Integration ensures access to all necessary system resources.</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="email-preview-pane w98-border-window-content" id="emailPreviewPane">
+         <div class="placeholder">Select an email to read it.</div>
+    </div>
+</div>
+
+<div id="deleteConfirmModal" class="modal-overlay modal-hidden">
+    <div class="modal-box w98-border-raised">
+        <p>Are you sure you want to permanently delete the selected message?</p>
+        <div class="modal-buttons">
+            <button id="confirmDeleteYes" class="w98-button confirm-yes"><u>Y</u>es</button>
+            <button id="confirmDeleteNo" class="w98-button">No</button>
+        </div>
+    </div>
+</div>
+
+</div>
+<div class="email-statusbar" id="emailStatus"></div>
+<script>
+// --- Make navigateToBrowser globally accessible ---
+window.navigateToBrowser = function(url) {
+console.log(`Email requesting navigation to: ${url}`);
+window.parent.postMessage({
+type: 'navigateBrowser',
+payload: { url: url }
+}, '*');
+}
+
+// --- DOM References ---
+const emailListBody = document.getElementById('emailListBody');
+const emailPreviewPane = document.getElementById('emailPreviewPane');
+const emailStatus = document.getElementById('emailStatus');
+const folderList = document.querySelector('.folder-list-pane ul');
+const deleteButton = document.getElementById('deleteButton');
+const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+const confirmDeleteYes = document.getElementById('confirmDeleteYes');
+const confirmDeleteNo = document.getElementById('confirmDeleteNo');
+const adEmailId = "adEmailRow"; // ID for the specific ad email row
+
+// --- Store Initial State ---
+let initialInboxHTML = emailListBody ? emailListBody.innerHTML : '';
+const initialPlaceholder = '<div class="placeholder">Select an email to read it.</div>';
+const folderPlaceholderHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: #777;">(Email list for this folder would load here)</td></tr>';
+
+// --- Variable to store the row to be deleted ---
+let rowToDelete = null;
+let adEmailHTML = ''; // To store the HTML of the ad email if deleted
+
+// --- Set Initial Preview ---
+if (emailPreviewPane) {
+emailPreviewPane.innerHTML = initialPlaceholder;
+}
+
+// --- Function to show/hide modal ---
+function showDeleteModal() {
+if (deleteConfirmModal) {
+deleteConfirmModal.classList.remove('modal-hidden');
+deleteConfirmModal.classList.add('modal-visible');
+confirmDeleteYes.focus();
+}
+}
+function hideDeleteModal() {
+if (deleteConfirmModal) {
+deleteConfirmModal.classList.add('modal-hidden');
+deleteConfirmModal.classList.remove('modal-visible');
+rowToDelete = null; // Clear the reference
+}
+}
+
+// --- Event Listener for Email List ---
+if (emailListBody && emailPreviewPane) {
+emailListBody.addEventListener('click', (event) => {
+const clickedRow = event.target.closest('tr.email-item');
+if (!clickedRow) return;
+
+const currentlySelected = emailListBody.querySelector('tr.selected');
+if (currentlySelected) { currentlySelected.classList.remove('selected'); }
+clickedRow.classList.add('selected');
+
+const contentCell = clickedRow.querySelector('.email-content-data');
+const from = clickedRow.dataset.from || 'N/A';
+const subject = clickedRow.dataset.subject || 'N/A';
+
+let previewHTML = `
+<div class="email-preview-header">
+<div><strong>From:</strong> ${escapeHTML(from)}</div>
+<div><strong>Subject:</strong> ${escapeHTML(subject)}</div>
+</div>
+<div class="email-preview-content">
+`;
+previewHTML += contentCell ? contentCell.innerHTML : '<p>Could not load email content.</p>';
+previewHTML += '</div>';
+emailPreviewPane.innerHTML = previewHTML;
+
+if (clickedRow.dataset.read === 'false') {
+clickedRow.dataset.read = 'true';
+clickedRow.classList.remove('flashing-notification'); // Stop flashing visually
+
+const isInboxSelected = folderList.querySelector('li.inbox.selected');
+if (isInboxSelected) {
+// Update read status in the stored HTML
+const tempDiv = document.createElement('div');
+tempDiv.innerHTML = initialInboxHTML;
+const rowIdentifier = clickedRow.id ? `#${clickedRow.id}` : `tr[data-subject="${escapeAttributeValue(subject)}"]`;
+const correspondingRow = tempDiv.querySelector(rowIdentifier);
+if (correspondingRow) {
+correspondingRow.dataset.read = 'true';
+correspondingRow.classList.remove('flashing-notification'); // Stop flashing in stored copy
+initialInboxHTML = tempDiv.innerHTML;
+} else {
+console.warn("Could not find corresponding row in initialInboxHTML for subject:", subject);
+}
+}
+updateStatusBar();
+}
+});
+} else {
+console.error("Could not find email list body or preview pane elements.");
+}
+
+// --- Event Listener for Folder List ---
+if (folderList && emailListBody) {
+folderList.addEventListener('click', (event) => {
+const clickedItem = event.target.closest('li');
+if (!clickedItem) return;
+
+const currentlySelected = folderList.querySelector('li.selected');
+if (currentlySelected) { currentlySelected.classList.remove('selected'); }
+clickedItem.classList.add('selected');
+
+const folderId = clickedItem.dataset.folder;
+console.log(`Folder selected: ${folderId}`);
+
+emailListBody.innerHTML = (folderId === 'inbox') ? initialInboxHTML : folderPlaceholderHTML;
+if(emailPreviewPane) emailPreviewPane.innerHTML = initialPlaceholder;
+updateStatusBar();
+});
+} else {
+console.error("Could not find folder list or email list body elements.");
+}
+
+// --- Update Status Bar Function ---
+function updateStatusBar() {
+if (!emailStatus || !emailListBody) return;
+const totalItems = emailListBody.querySelectorAll('tr.email-item').length;
+const unreadItems = emailListBody.querySelectorAll('tr.email-item[data-read="false"]').length;
+emailStatus.textContent = `${totalItems} message(s), ${unreadItems} unread`;
+}
+
+// --- Toolbar Button Logic (Delete) ---
+if (deleteButton && emailListBody && emailPreviewPane) {
+deleteButton.addEventListener('click', () => {
+const selectedRow = emailListBody.querySelector('tr.selected');
+if (selectedRow) {
+rowToDelete = selectedRow; // Store the row reference
+showDeleteModal(); // Show the custom modal
+} else {
+// In a real app, you might show a Win98 style message box here
+console.log("Email Action: Delete (no selection)");
+alert("Please select an email to delete."); // Simple alert
+}
+});
+}
+
+// --- Modal Button Listeners ---
+if (confirmDeleteYes) {
+confirmDeleteYes.addEventListener('click', () => {
+if (rowToDelete) {
+const isInboxSelected = folderList.querySelector('li.inbox.selected');
+const subjectToDelete = rowToDelete.dataset.subject; // Use subject for identification
+const isAdEmail = rowToDelete.id === adEmailId;
+
+if (isAdEmail) {
+rowToDelete.dataset.read = 'false'; // Ensure it's marked unread
+rowToDelete.classList.add('flashing-notification'); // Ensure flashing class
+adEmailHTML = rowToDelete.outerHTML; // Store potentially modified HTML
+}
+
+rowToDelete.remove();
+if(emailPreviewPane) emailPreviewPane.innerHTML = initialPlaceholder;
+
+if (isInboxSelected) {
+// Update the stored HTML for the inbox
+const tempDiv = document.createElement('div');
+tempDiv.innerHTML = initialInboxHTML;
+const rowIdentifier = isAdEmail ? `#${adEmailId}` : `tr[data-subject="${escapeAttributeValue(subjectToDelete)}"]`;
+const rowInStoredHTML = tempDiv.querySelector(rowIdentifier);
+if (rowInStoredHTML) {
+rowInStoredHTML.remove();
+initialInboxHTML = tempDiv.innerHTML;
+} else {
+console.warn("Could not find corresponding row in initialInboxHTML to delete for subject:", subjectToDelete);
+}
+}
+
+updateStatusBar();
+console.log("Email Action: Delete confirmed via modal");
+
+if (isAdEmail && adEmailHTML) {
+console.log("Scheduling ad email reappearance...");
+setTimeout(() => {
+const currentInboxList = document.getElementById('emailListBody');
+const isCurrentlyInbox = folderList.querySelector('li.inbox.selected');
+// Only re-add if the inbox is currently displayed
+if (currentInboxList && isCurrentlyInbox) {
+console.log("Re-inserting ad email into displayed inbox.");
+currentInboxList.insertAdjacentHTML('afterbegin', adEmailHTML);
+}
+// Always re-add to the stored inbox HTML
+console.log("Re-inserting ad email into stored inbox HTML.");
+initialInboxHTML = adEmailHTML + initialInboxHTML;
+// Update status bar only if inbox is visible
+if (isCurrentlyInbox) updateStatusBar();
+}, 3000); // 3 seconds delay
+}
+}
+hideDeleteModal();
+});
+}
+if (confirmDeleteNo) {
+confirmDeleteNo.addEventListener('click', () => {
+console.log("Email Action: Delete cancelled via modal");
+hideDeleteModal();
+});
+}
+
+// --- Utility Function to Escape HTML ---
+function escapeHTML(str) {
+if (!str) return ''; // Handle null or undefined input
+const div = document.createElement('div');
+div.appendChild(document.createTextNode(str));
+return div.innerHTML;
+}
+// --- Utility Function to Escape CSS Attribute Selectors ---
+function escapeAttributeValue(str) {
+if (!str) return ''; // Handle null or undefined input
+// Escape characters that are special in CSS attribute selectors (quotes and backslashes)
+return str.replace(/["\\]/g, '\\$&');
+}
+
+
+// --- Initial Setup ---
+updateStatusBar();
+hideDeleteModal();
+// Store initial HTML after potential dynamic additions (just in case, though here it's static)
+initialInboxHTML = emailListBody ? emailListBody.innerHTML : '';
+
+
+</script>
+<script>
+document.addEventListener('click', function(event) {
+// Check if the clicked element is a button, link, or inside certain interactive areas
+if (event.target.closest('button, a, .sidebar a, .file-list-table tbody tr, .folder-list-pane li, .email-list-table tbody tr')) {
+// Optionally add more specific checks if needed
+console.log('Interaction click detected in iframe:', event.target.tagName, event.target.textContent?.substring(0, 20));
+window.parent.postMessage({ type: 'userInteractionClick' }, '*');
+}
+}, true); // Use capture phase to catch clicks early
+</script>
+</body>
+</html>
+

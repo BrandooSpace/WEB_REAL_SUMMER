@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windows 98 Desktop - Integrated Environment</title>
+<link rel="stylesheet" href="win98-styles.css">
+<style>
+/* --- Page-Specific Styles --- */
+body {
+margin: 0;
+font-family: "Tahoma", "MS Sans Serif", Arial, sans-serif;
+font-size: 13pt;
+background-image: url('public/sky.png');
+background-size: cover; background-repeat: no-repeat; background-position: center center;
+background-color: #008080; /* Fallback */
+overflow: hidden; position: relative; height: 100vh; user-select: none;
+transition: filter 0.1s linear; /* For intense body glitch */
+}
+/* Class for subtle flicker */
+body.wallpaper-subtle-flicker-active {
+/* MODIFICATION: Adjust animation timing for degradation */
+animation: subtle-wallpaper-flicker var(--wallpaper-flicker-duration, 15s) infinite linear;
+}
+/* Class for intense body glitch */
+body.intense-glitch-active {
+animation: intense-body-glitch 0.1s infinite steps(1, end);
+}
+/* --- Desktop Content Wrapper --- */
+#desktop-content-wrapper {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden;
+ }
+
+/* --- Desktop Icons (Absolute Positioning) --- */
+ .desktop {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 36px;
+    padding: 10px; background-color: transparent;
+ }
+ .icon {
+    position: absolute; display: flex; flex-direction: column; align-items: center;
+    width: 84px; text-align: center; cursor: pointer; font-size: 13pt; z-index: 1;
+    transition: transform 0.1s ease-out, filter 0.1s ease-out; /* Smooth reset */
+ }
+ /* Class for subtle icon glitch */
+ .icon.icon-subtle-glitch {
+    /* MODIFICATION: Adjust animation timing for degradation */
+    animation: subtle-icon-glitch var(--icon-glitch-duration, 8s) infinite steps(1, end);
+ }
+ /* Class for INTENSE icon glitch */
+ .icon.icon-intense-glitch {
+    animation: intense-icon-glitch 0.1s infinite steps(2, jump-none); /* Faster loop */
+ }
+ /* **** ADDED: Class for Click-Triggered Glitch **** */
+ .icon.icon-click-glitching {
+     animation-name: icon-click-vibrate-glitch;
+     animation-duration: var(--click-glitch-duration, 0.1s); /* Use CSS variable */
+     animation-timing-function: steps(3, end); /* Jerky steps */
+     animation-iteration-count: 1; /* Play once */
+ }
+
+
+ .icon.dragging { z-index: 100; opacity: 0.8; cursor: grabbing; animation: none !important; /* Disable glitch while dragging */ }
+ .icon-graphic {
+    width: 38px; height: 38px; background-size: contain; background-repeat: no-repeat;
+    background-position: center; margin-bottom: 6px; position: relative; image-rendering: pixelated;
+ }
+ .icon-graphic.browser::before, .icon-graphic.computer::before,
+ .icon-graphic.recycle::before, .icon-graphic.mail::before,
+ .icon-graphic.synergy::before {
+    content: attr(data-icon); display: block; font-size: 34px; line-height: 38px;
+    width: 38px; height: 38px; position: absolute; left: 0; top: 0; text-align: center;
+    image-rendering: pixelated; position: relative; left: 3px;
+ }
+ .icon-graphic.mail::before { content: "✉️"; } .icon-graphic.browser::before { content: "🌍"; }
+ .icon-graphic.computer::before { content: "🖥️"; } .icon-graphic.recycle::before { content: "🗑️"; }
+ .icon-graphic.synergy::before { content: "⚙️"; }
+
+ .icon p { margin: 0; color: white; font-size: 11pt; text-shadow: 1px 1px 1px black; padding: 2px; }
+ .icon.has-notification .icon-graphic::after {
+    content: ''; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px;
+    background-color: red; border-radius: 50%; border: 1px solid white;
+    box-shadow: 0 0 3px red; animation: pulse-notification 2.5s infinite ease-in-out;
+}
+@keyframes pulse-notification { 0% { opacity: 1; transform: scale(1.1); } 50% { opacity: 0.3; transform: scale(1.0); } 100% { opacity: 1; transform: scale(1.1); } }
+ .icon:not(.has-notification) .icon-graphic::after { display: none; }
+ .icon.selected p { background: var(--w98-highlight); color: var(--w98-highlight-text); }
+
+/* --- Taskbar --- */
+ .taskbar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 36px;
+    background-color: var(--w98-bg-gray); border-top: 1px solid var(--w98-border-light);
+    display: flex; align-items: center; padding: 0 2px; z-index: 1000;
+ }
+ .start-button { /* Uses w98-button base */
+    padding: 2px 12px 2px 6px; margin-right: 6px; font-weight: bold;
+    display: flex; align-items: center; font-size: 13pt; line-height: 19px;
+ }
+ .start-button::before {
+    content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAHhJREFUOE9jZKAQMKLr/90MHFwYgPj/PxMDgyALAANxAwMDIxMTgwMMDAx4gQJjZgYGBgYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGBkYGeh8DAwPD/w8GBgYGRkYGBoYMDAwMiHqAAAMAo+QH/78a5wUAAAAASUVORK5CYII=');
+    margin-right: 6px; width: 19px; height: 19px; image-rendering: pixelated;
+ }
+ .start-button:active { padding: 4px 11px 1px 7px; } /* Keep specific active padding */
+ .taskbar-apps { flex-grow: 1; display: flex; height: 100%; align-items: center; overflow: hidden; gap: 4px; margin-left: 5px; }
+ .taskbar-icon { /* Uses w98-button base */
+    padding: 2px 10px; margin: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 180px; font-size: 11pt; display: flex; align-items: center; height: 26px;
+ }
+ .taskbar-icon.active { border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark); box-shadow: none; background-color: #ddd; padding: 4px 8px 1px 11px; }
+ .taskbar-icon span { margin-right: 5px; font-size: 12pt; line-height: 1; }
+ .clock-area { /* Uses w98-border-sunken base */
+    padding: 2px 10px; margin: 2px; font-size: 11pt; height: 26px; display: flex; align-items: center;
+    position: relative; min-width: 80px; /* Ensure space */
+ }
+ .clock { line-height: 1; }
+ #statusMessage {
+    position: absolute;
+    left: -155px; /* Position to the left of clock */
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 9pt;
+    color: #FF0000; /* Red for errors */
+    font-weight: bold;
+    width: 150px; /* Adjust width as needed */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+ }
+ #statusMessage.visible {
+    opacity: 1;
+ }
+
+
+/* --- Windows --- */
+ .window {
+    position: absolute; background-color: var(--w98-bg-gray);
+    box-shadow: 2px 2px 3px rgba(0,0,0,0.3); display: none; flex-direction: column;
+    min-width: 180px; min-height: 120px;
+ }
+ .window.active { z-index: 50 !important; }
+ .window.active .window-titlebar { background: var(--w98-highlight); }
+ .window:not(.active) .window-titlebar { background: var(--w98-title-bar-inactive); }
+ .window-titlebar {
+    color: var(--w98-highlight-text); padding: 2px 5px; font-weight: bold; font-size: 11pt;
+    display: flex; justify-content: space-between; align-items: center; cursor: grab; height: 22px; flex-shrink: 0;
+ }
+ .window-titlebar:active { cursor: grabbing; }
+ .window-title { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 6px; }
+ .window-icon { margin-right: 5px; font-size: 12pt; line-height: 1; }
+ .window-buttons button {
+    font-family: "Marlett", "Webdings", sans-serif; font-size: 10pt; font-weight: bold;
+    width: 19px; height: 17px; padding: 0; line-height: 17px; text-align: center; margin-left: 1px;
+ }
+ .window-content {
+    flex-grow: 1; margin: 2px; padding: 0px; overflow: auto; position: relative;
+    position: relative;
+    overflow: hidden; /* Hide overflowing pseudo-elements */
+ }
+ .window-content iframe { width: 100%; height: 100%; border: none; display: block; }
+ .window-template { display: none !important; }
+
+/* --- IE Specific Styles --- */
+.ie-menu-bar, .ie-toolbar, .ie-address-bar {
+  background: var(--w98-bg-gray); padding: 2px 5px; border-bottom: 1px solid var(--w98-border-dark);
+  display: none; flex-shrink: 0; font-size: 12pt; position: relative; height: 28px;
+}
+.window.is-internet-explorer .ie-menu-bar, .window.is-internet-explorer .ie-toolbar,
+.window.is-internet-explorer .ie-address-bar { display: flex; align-items: center; }
+.ie-menu-bar span { padding: 2px 7px; margin-right: 2px; cursor: default; }
+.ie-menu-bar span:hover { background: var(--w98-highlight); color: var(--w98-highlight-text); }
+.ie-toolbar button {
+    border: 1px solid var(--w98-bg-gray); box-shadow: none; padding: 4px 6px; margin-right: 2px;
+    min-width: 60px; text-align: center; height: 24px;
+}
+.ie-toolbar button:hover { border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light); box-shadow: 1px 1px 0 var(--w98-border-black); }
+.ie-toolbar button:active { border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark); box-shadow: none; padding: 5px 5px 2px 7px; }
+.ie-address-bar label { margin-right: 6px; color: #555; }
+.ie-address-bar input#ieAddressInput {
+    flex-grow: 1; padding: 2px 5px; font-size: 12pt; height: 20px;
+ }
+.ie-address-bar button {
+    margin-left: 5px; padding: 1px 10px; font-weight: bold; font-size: inherit; height: 24px;
+}
+.ie-address-bar button:active { padding: 2px 8px 0px 11px; } /* Keep specific active padding */
+#ieAddressDropdown { display: none; position: absolute; background-color: white; border: 1px solid var(--w98-border-dark); box-shadow: 1px 1px 3px rgba(0,0,0,0.2); z-index: 100; top: 100%; font-size: 12pt; }
+#ieAddressDropdown a { display: block; padding: 5px 10px; color: black; text-decoration: none; cursor: pointer; }
+#ieAddressDropdown a:hover { background-color: var(--w98-highlight); color: var(--w98-highlight-text); }
+.window.is-internet-explorer .window-content iframe { flex-grow: 1; min-height: 0; }
+
+/* --- Indicator Styles --- */
+.download-indicator, .payment-indicator {
+    position: absolute; bottom: 3px; right: 5px; background-color: var(--w98-bg-gray);
+    padding: 4px 10px; font-size: 12pt; z-index: 60; display: none; align-items: center;
+    gap: 10px; color: var(--w98-text-black); pointer-events: none;
+}
+.download-indicator { max-width: 360px; }
+.payment-indicator { padding: 4px 12px; }
+.download-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.download-progress-bar {
+    width: 120px; height: 14px; background-color: var(--w98-border-dark); border: 1px solid var(--w98-border-black);
+    overflow: hidden; box-shadow: inset 1px 1px 0 #555;
+}
+.download-progress { width: 0%; height: 100%; background-color: var(--w98-highlight); transition: width 0.2s linear; }
+.payment-text { font-weight: bold; }
+
+/* --- Simple Alert Box Style --- */
+.w98-alert-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.1); /* Slight dim */
+    display: flex; justify-content: center; align-items: center;
+    z-index: 2000; /* High z-index */
+}
+.w98-alert-box {
+    background-color: var(--w98-bg-gray);
+    padding: 2px; /* For border */
+    min-width: 280px; max-width: 400px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+}
+.w98-alert-titlebar {
+    background-color: var(--w98-highlight); /* Active blue */
+    color: var(--w98-highlight-text);
+    padding: 3px 5px; font-weight: bold; font-size: 9pt;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+}
+.w98-alert-titlebar span { flex-grow: 1; }
+.w98-alert-titlebar button { /* Style like window close */
+    background-color: var(--w98-bg-gray); border: 1px solid;
+    border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light);
+    box-shadow: 1px 1px 0 var(--w98-border-black); color: var(--w98-text-black);
+    font-family: "Marlett", "Webdings", sans-serif; font-size: 8pt; font-weight: bold;
+    width: 16px; height: 14px; padding: 0; line-height: 14px; text-align: center; cursor: pointer;
+}
+.w98-alert-titlebar button:active { border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark); box-shadow: none; }
+.w98-alert-content {
+    padding: 15px 20px 20px 20px;
+    display: flex; align-items: flex-start; gap: 15px;
+    font-size: 10pt;
+}
+.w98-alert-icon {
+    font-size: 24pt; /* Larger icon */
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.w98-alert-message { margin: 0; flex-grow: 1; }
+.w98-alert-buttons {
+    text-align: center; padding-top: 15px;
+}
+.w98-alert-buttons button { /* Standard button style */
+    min-width: 75px;
+    padding: 4px 15px;
+}
+ .w98-alert-buttons button:focus {
+     outline: 1px dotted var(--w98-text-black);
+     outline-offset: -4px;
+ }
+
+/* --- Glitch Animations --- */
+@keyframes subtle-icon-glitch { /* MODIFICATION: No change needed here, controlled by JS */
+  0%, 100% { transform: translate(0, 0); filter: none; }
+  49% { transform: translate(0, 0); filter: none; }
+  50% { transform: translate(1px, -1px); filter: hue-rotate(10deg); }
+  51% { transform: translate(0, 0); filter: none; }
+  74% { transform: translate(0, 0); filter: none; }
+  75% { transform: translate(-1px, 1px); filter: contrast(1.2); }
+  76% { transform: translate(0, 0); filter: none; }
+}
+@keyframes subtle-wallpaper-flicker { /* MODIFICATION: No change needed here, controlled by JS */
+   0%, 100% { filter: brightness(1); }
+   49.5% { filter: brightness(1); }
+   50% { filter: brightness(0.95) contrast(1.1); }
+   50.5% { filter: brightness(1); }
+}
+/* **** MODIFIED: Crazier Intense Icon Glitch **** */
+@keyframes intense-icon-glitch {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); filter: none; opacity: 1; }
+  15% { transform: translate(-5px, 3px) rotate(-3deg) scale(1.05); filter: hue-rotate(45deg) saturate(2) contrast(1.3); opacity: 0.8; }
+  30% { transform: translate(4px, -5px) rotate(5deg) scale(0.95); filter: contrast(2.0) brightness(1.2) sepia(0.3); opacity: 1; }
+  45% { transform: translate(-2px, 6px) rotate(-4deg) scale(1.1); filter: hue-rotate(-30deg) saturate(0.5) invert(0.1); opacity: 0.75; }
+  60% { transform: translate(6px, -2px) rotate(3deg) scale(1); filter: contrast(0.7) brightness(0.8) blur(0.5px); opacity: 0.9; }
+  75% { transform: translate(-4px, 1px) rotate(6deg) scale(1.08); filter: hue-rotate(90deg) saturate(2.5); opacity: 1; }
+  90% { transform: translate(1px, -3px) rotate(-2deg) scale(0.92); filter: contrast(1.6) brightness(1.1); opacity: 0.8; }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1); filter: none; opacity: 1; }
+}
+/* **** ADDED: Intense Body Glitch (Optional Screen Filter) **** */
+ @keyframes intense-body-glitch {
+   0%, 100% { filter: none; }
+   25% { filter: hue-rotate(15deg) contrast(1.2) brightness(0.95); }
+   50% { filter: hue-rotate(-10deg) contrast(0.8) brightness(1.05) saturate(1.3); }
+   75% { filter: sepia(0.2) contrast(1.4); }
+ }
+
+
+/* **** MODIFIED: Crazier Browser Split Glitch **** */
+@keyframes browser-split-glitch-anim { /* Shortened duration */
+  0% { opacity: 0; }
+  10%, 90% { opacity: 1; } /* Hold the glitch */
+  100% { opacity: 0; }
+}
+@keyframes browser-split-glitch-top { /* More extreme transforms */
+  0%, 100% { transform: translateY(0); filter: none; }
+  20% { transform: translateY(-15px) skewX(-8deg) rotate(-2deg); filter: hue-rotate(40deg) contrast(1.5); }
+  40% { transform: translateY(-8px) skewX(5deg) rotate(1deg); filter: hue-rotate(-20deg) contrast(0.8) saturate(2); }
+  60% { transform: translateY(-18px) skewX(-4deg) rotate(3deg); filter: saturate(0.3) brightness(1.3); }
+  80% { transform: translateY(-10px) skewX(6deg) rotate(-1deg); filter: hue-rotate(60deg) sepia(0.4); }
+}
+@keyframes browser-split-glitch-bottom { /* More extreme transforms */
+   0%, 100% { transform: translateY(0); filter: none; }
+   20% { transform: translateY(12px) skewX(6deg) rotate(1deg); filter: hue-rotate(-50deg) brightness(0.8); }
+   40% { transform: translateY(16px) skewX(-7deg) rotate(-3deg); filter: contrast(1.8) saturate(0.6) invert(0.1); }
+   60% { transform: translateY(9px) skewX(3deg) rotate(2deg); filter: saturate(1.8) blur(0.3px); }
+   80% { transform: translateY(20px) skewX(-5deg) rotate(-1deg); filter: hue-rotate(-80deg) contrast(1.2); }
+}
+
+.browser-split-glitch .window-content::before,
+.browser-split-glitch .window-content::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: inherit; /* Inherit background from parent */
+    z-index: 10; /* Above iframe */
+    pointer-events: none;
+    /* Copy iframe content - tricky, using background as fallback */
+    background-color: #fff; /* Fallback bg */
+    opacity: 0; /* Start hidden */
+    animation-name: browser-split-glitch-anim;
+    /* **** MODIFIED: Duration changed to 0.7s **** */
+    animation-duration: 0.7s;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards; /* Keep last frame (opacity 0) */
+}
+.browser-split-glitch .window-content::before {
+    clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+    animation-name: browser-split-glitch-anim, browser-split-glitch-top;
+    /* **** MODIFIED: Inner loop duration adjusted slightly **** */
+    animation-duration: 0.7s, 0.1s; /* Overall duration, faster inner loop */
+    animation-timing-function: linear, steps(2, jump-none);
+    animation-iteration-count: 1, infinite; /* Overall once, inner infinite */
+}
+ .browser-split-glitch .window-content::after {
+    clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+    animation-name: browser-split-glitch-anim, browser-split-glitch-bottom;
+    /* **** MODIFIED: Inner loop duration adjusted slightly **** */
+    animation-duration: 0.7s, 0.1s;
+    animation-timing-function: linear, steps(2, jump-none);
+    animation-iteration-count: 1, infinite;
+    animation-delay: 0s, 0.03s; /* Slightly offset bottom half animation */
+}
+/* Hide the actual iframe during the glitch */
+.browser-split-glitch .window-content iframe {
+    visibility: hidden;
+}
+
+/* **** ADDED: Keyframes for click-triggered icon glitch **** */
+@keyframes icon-click-vibrate-glitch {
+    0%, 100% {
+        transform: translate(0, 0);
+        filter: none;
+    }
+    25% {
+        /* Vibrate */
+        transform: translate(calc(var(--click-glitch-intensity, 1) * -1px), calc(var(--click-glitch-intensity, 1) * 1px));
+        /* Green flash using filter */
+        filter: sepia(80%) hue-rotate(60deg) saturate(500%) brightness(1.1);
+    }
+    50% {
+        transform: translate(calc(var(--click-glitch-intensity, 1) * 1px), calc(var(--click-glitch-intensity, 1) * -1px));
+         filter: sepia(60%) hue-rotate(70deg) saturate(300%) brightness(1.0);
+    }
+    75% {
+        transform: translate(calc(var(--click-glitch-intensity, 1) * -0.5px), calc(var(--click-glitch-intensity, 1) * 0.5px));
+        filter: sepia(90%) hue-rotate(55deg) saturate(600%) brightness(1.2);
+    }
+}
+/* REMOVED THE BAD LINE HERE */
+</style>
+</head>
+<body class="wallpaper-subtle-flicker"> <div id="desktop-content-wrapper">
+    <div class="desktop">
+        <!-- MODIFICATION: Removed data-requires-integration from IE -->
+        <div class="icon" data-url="home.html" data-title="Internet Explorer" data-icon="🌍" data-window-id="browserWindow">
+          <div class="icon-graphic browser" data-icon="🌍"></div> <p>Internet Explorer</p>
+        </div>
+        <div class="icon" data-url="mycomputer.html" data-title="My Computer" data-icon="🖥️" data-window-id="myComputerWindow" data-requires-integration="true">
+          <div class="icon-graphic computer" data-icon="🖥️"></div> <p>My Computer</p>
+        </div>
+        <!-- MODIFICATION: Removed data-requires-integration from Email -->
+        <div class="icon has-notification" id="emailIcon" data-url="email.html" data-title="E-Mail" data-icon="✉️" data-window-id="mailWindow">
+            <div class="icon-graphic mail" data-icon="✉️"></div> <p>E-Mail</p>
+        </div>
+        <!-- Recycle Bin still requires integration -->
+        <div class="icon" data-url="recycle.html" data-title="Recycle Bin" data-icon="🗑️" data-window-id="recycleBinWindow" data-requires-integration="true">
+          <div class="icon-graphic recycle" data-icon="🗑️"></div> <p>Recycle Bin</p>
+        </div>
+        <!-- Synergy Portal remains accessible -->
+        <div class="icon synergy-icon" data-url="computervision.html" data-title="Synergy Portal" data-icon="⚙️" data-window-id="synergyPortalWindow">
+             <div class="icon-graphic synergy" data-icon="⚙️"></div> <p>Synergy Portal</p>
+         </div>
+      </div>
+      
+      <div class="taskbar">
+        <div class="start-button w98-button" onclick="showWin98Alert('Not Implemented', 'The Start Menu is currently unavailable.', 'info');"><span>Start</span></div>
+        <div class="taskbar-apps" id="taskbarApps"></div>
+        <div class="clock-area w98-border-sunken">
+            <div id="statusMessage"></div>
+            <div class="clock" id="clock"></div>
+        </div>
+      </div>
+      
+      <!-- Window Template remains unchanged -->
+      <div class="window window-template w98-border-raised">
+          <div class="window-titlebar template-drag-bar w98-title-bar">
+             <span class="window-icon template-icon">📄</span>
+             <span class="window-title template-title">New Window</span>
+             <div class="window-buttons w98-title-buttons">
+               <button title="Minimize" class="template-minimize">0</button> <button title="Maximize" class="template-maximize">1</button> <button title="Close" class="template-close">r</button> </div>
+          </div>
+          <div class="ie-menu-bar template-ie-menubar" style="display: none;"><span><u>F</u>ile</span><span><u>E</u>dit</span><span><u>V</u>iew</span><span><u>G</u>o</span><span><u>F</u>avorites</span><span><u>H</u>elp</span></div>
+          <div class="ie-toolbar template-ie-toolbar" style="display: none;"> <button class="w98-button template-ie-back" title="Back" disabled>Back</button> <button class="w98-button template-ie-forward" title="Forward" disabled>Forward</button> <button class="w98-button template-ie-stop" title="Stop">Stop</button> <button class="w98-button template-ie-refresh" title="Refresh">Refresh</button> <button class="w98-button template-ie-home" title="Home">Home</button> </div>
+          <div class="ie-address-bar template-ie-addressbar" style="display: none;"> <label>Address:</label> <input type="text" class="template-ie-address-input"> <button class="w98-button template-ie-go">Go</button> <div class="template-ie-address-dropdown" style="display: none; position: absolute; background-color: white; border: 1px solid var(--w98-border-dark); box-shadow: 1px 1px 3px rgba(0,0,0,0.2); z-index: 100; top: 100%; font-size: 12pt;"> <a href="#" data-target-url="home.html">home.html</a> <a href="#" data-target-url="apparel.html">apparel.html</a> <a href="#" data-target-url="about.html">about.html</a> <a href="#" data-target-url="email.html">email.html</a> <a href="#" data-target-url="computervision.html">computervision.html</a> <a href="#" data-target-url="sub.html">sys://integration.subscribe</a> </div> </div>
+          <div class="window-content template-content w98-border-window-content">
+              </div>
+      </div>
+      
+      <!-- Alert Template remains unchanged -->
+      <div id="w98AlertTemplate" style="display: none;">
+        <div class="w98-alert-overlay">
+            <div class="w98-alert-box w98-border-raised">
+                <div class="w98-alert-titlebar">
+                    <span class="alert-title">Alert</span>
+                    <button class="alert-close-btn" title="Close">r</button>
+                </div>
+                <div class="w98-alert-content">
+                    <span class="w98-alert-icon"></span>
+                    <p class="w98-alert-message"></p>
+                </div>
+                <div class="w98-alert-buttons">
+                    <button class="w98-button alert-ok-btn">OK</button>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <script>
+    console.log("Desktop script starting...");
+    
+    // --- DOM References ---
+    const taskbarAppsContainer = document.getElementById("taskbarApps");
+    const desktopContentWrapper = document.getElementById('desktop-content-wrapper');
+    const desktopElement = document.querySelector('.desktop');
+    const windowTemplate = document.querySelector('.window-template');
+    const clockElement = document.getElementById("clock");
+    const statusMessageElement = document.getElementById("statusMessage");
+    const emailIconElement = document.getElementById('emailIcon');
+    const allDesktopIcons = document.querySelectorAll('.desktop .icon');
+    const bodyElement = document.body;
+    
+    // --- State Variables ---
+    let openWindows = {};
+    let activeWindowId = null;
+    let highestZIndex = 10;
+    let nextWindowOffset = { top: 40, left: 60 };
+    let emailNotificationTimeoutId = null;
+    let popupAdTimeoutId = null;
+    let respawnAdTimeoutId = null;
+    let statusMessageTimeoutId = null;
+    let subtleGlitchIntervalId = null;
+    let isIntegrationRequired = true;
+    // **** ADDED: Click Glitch State ****
+    let clickGlitchCounter = 0;
+    const clickGlitchBaseDuration = 50; // ms
+    const clickGlitchDurationFactor = 1.15; // Exponential growth factor for duration
+    const clickGlitchBaseIntensity = 1; // px
+    const clickGlitchIntensityFactor = 1.1; // Exponential growth factor for intensity
+    const clickGlitchMaxDuration = 1500; // Max duration in ms
+    const clickGlitchMaxIntensity = 10; // Max intensity in px
+    // **** ADDED: Degradation State ****
+    let degradationLevel = 0; // 0 = Normal, increases over time
+    const maxDegradationLevel = 10;
+    let degradationIntervalId = null;
+    // **** ADDED: Upgrade Popup State ****
+    let upgradePopupTimeoutId = null;
+    const baseUpgradePopupInterval = 90000; // 90 seconds initially
+    const upgradePopupIntervalReduction = 5000; // Reduce interval by 5s per degradation level
+    const minUpgradePopupInterval = 20000; // Minimum 20 seconds interval
+    
+    
+    // --- Clock Functionality ---
+    function updateClock() {
+    if (!clockElement) return;
+    const now = new Date();
+    let hours = now.getHours();
+    let minutes = now.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    minutes = minutes.toString().padStart(2, "0");
+    clockElement.innerText = `${hours}:${minutes} ${ampm}`;
+    }
+    setInterval(updateClock, 1000 * 30);
+    updateClock();
+    
+    // --- Taskbar Management ---
+    function createTaskbarIcon(windowId, title, iconEmoji) {
+    const taskbarIconId = `taskbar-icon-${windowId}`;
+    if (document.getElementById(taskbarIconId)) {
+    focusWindow(windowId);
+    return;
+    }
+    const taskbarIcon = document.createElement('div');
+    taskbarIcon.className = 'taskbar-icon w98-button';
+    taskbarIcon.id = taskbarIconId;
+    taskbarIcon.title = title;
+    taskbarIcon.dataset.windowId = windowId;
+    
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = iconEmoji;
+    taskbarIcon.appendChild(iconSpan);
+    taskbarIcon.appendChild(document.createTextNode(" " + title));
+    
+    taskbarIcon.onclick = () => focusWindow(windowId);
+    taskbarAppsContainer.appendChild(taskbarIcon);
+    }
+    function removeTaskbarIcon(windowId) {
+    const taskbarIcon = document.getElementById(`taskbar-icon-${windowId}`);
+    if (taskbarIcon) taskbarIcon.remove();
+    }
+    function setActiveTaskbarIcon(windowId) {
+    document.querySelectorAll('.taskbar-icon').forEach(icon => icon.classList.remove('active'));
+    const taskbarIcon = document.getElementById(`taskbar-icon-${windowId}`);
+    if (taskbarIcon) taskbarIcon.classList.add('active');
+    }
+    
+    // --- Focus Management ---
+    function focusWindow(windowId) {
+    if (!openWindows[windowId] || !openWindows[windowId].element) return; // Added check for element
+    const windowData = openWindows[windowId];
+    highestZIndex++;
+    windowData.element.style.zIndex = highestZIndex;
+    windowData.element.style.display = 'flex'; // Ensure it's flex for layout
+    if (activeWindowId && openWindows[activeWindowId] && openWindows[activeWindowId].element && activeWindowId !== windowId) {
+    openWindows[activeWindowId].element.classList.remove('active');
+    }
+    windowData.element.classList.add('active');
+    activeWindowId = windowId;
+    setActiveTaskbarIcon(windowId);
+    }
+    
+    
+    // --- Window Actions (Close, Minimize, Maximize) ---
+    function closeWindow(windowId) {
+    console.log(`Attempting to close window: ${windowId}`);
+    const windowData = openWindows[windowId];
+    
+    if (!windowData || !windowData.element) { // Check if window exists and has an element
+    console.warn(`Window ${windowId} not found or element missing.`);
+    const el = document.getElementById(windowId); // Try finding element by ID just in case
+    if (el) {
+    console.log(`Removing orphaned window element ${windowId}`);
+    el.remove();
+    }
+    removeTaskbarIcon(windowId); // Still remove taskbar icon
+    if (activeWindowId === windowId) activeWindowId = null;
+    delete openWindows[windowId]; // Clean up state
+    return;
+    }
+    
+    const windowElement = windowData.element;
+    
+    // Special handling for browser window (ads)
+    if (windowId === 'browserWindow') {
+    if (popupAdTimeoutId) { clearTimeout(popupAdTimeoutId); popupAdTimeoutId = null; }
+    if (respawnAdTimeoutId) { clearTimeout(respawnAdTimeoutId); respawnAdTimeoutId = null; }
+    // Attempt to close ad popup if it exists
+    const adPopupData = openWindows['apparelAdPopup'];
+    if (adPopupData && adPopupData.element) { closeWindow('apparelAdPopup'); }
+    // Close upgrade popup if it exists
+    const upgradePopupData = openWindows['upgradeExperiencePopup'];
+    if (upgradePopupData && upgradePopupData.element) { closeWindow('upgradeExperiencePopup'); }
+    
+    windowElement.style.display = 'none';
+    const frame = windowElement.querySelector('.template-content iframe');
+    if (frame) frame.src = 'about:blank'; // Clear content
+    console.log("Closed main browser window (hidden).");
+    } else if (windowId === 'upgradeExperiencePopup') {
+    windowElement.remove();
+    console.log(`Removed upgrade popup window element ${windowId}.`);
+    delete openWindows[windowId]; // Remove from state
+    // Schedule next upgrade popup check
+    scheduleNextUpgradePopup();
+    } else {
+    // Default close: remove the element
+    windowElement.remove();
+    console.log(`Removed window element ${windowId}.`);
+    delete openWindows[windowId]; // Remove from state
+    }
+    
+    removeTaskbarIcon(windowId);
+    if (activeWindowId === windowId) { activeWindowId = null; } // Reset active window if needed
+    console.log(`Window ${windowId} closed.`);
+    }
+    
+    function minimizeWindow(windowId) {
+    if (!openWindows[windowId] || !openWindows[windowId].element) return;
+    openWindows[windowId].element.style.display = 'none';
+    if(activeWindowId === windowId) {
+    activeWindowId = null;
+    const taskbarIcon = document.getElementById(`taskbar-icon-${windowId}`);
+    if (taskbarIcon) taskbarIcon.classList.remove('active');
+    }
+    console.log(`Window ${windowId} minimized.`);
+    }
+    
+    function maximizeWindow(windowId) {
+    const winData = openWindows[windowId];
+    if (!winData || !winData.element) return;
+    const winEl = winData.element;
+    const taskbarHeight = 36;
+    const availableWidth = document.body.clientWidth;
+    const availableHeight = document.body.clientHeight;
+    
+    // Prevent maximizing if already maximized or during transition
+    if (winData.isMaximizing) return;
+    
+    winData.isMaximizing = true; // Flag to prevent rapid clicks
+    
+    if (!winData.isMaximized) {
+    // Store previous state BEFORE changing styles
+    winData.previousSize = { width: winEl.style.width, height: winEl.style.height, top: winEl.style.top, left: winEl.style.left };
+    // Apply maximized styles
+    winEl.style.transition = 'top 0.15s ease-out, left 0.15s ease-out, width 0.15s ease-out, height 0.15s ease-out'; // Smooth transition
+    winEl.style.top = "0px";
+    winEl.style.left = "0px";
+    winEl.style.width = `${availableWidth}px`;
+    winEl.style.height = `${availableHeight - taskbarHeight}px`;
+    winData.isMaximized = true;
+    console.log(`Window ${windowId} maximized.`);
+    } else {
+    // Restore previous state only if previousSize exists
+    if (winData.previousSize) {
+    winEl.style.transition = 'top 0.15s ease-out, left 0.15s ease-out, width 0.15s ease-out, height 0.15s ease-out'; // Smooth transition
+    winEl.style.width = winData.previousSize.width;
+    winEl.style.height = winData.previousSize.height;
+    winEl.style.top = winData.previousSize.top;
+    winEl.style.left = winData.previousSize.left;
+    } else {
+    // Fallback if previous size wasn't stored
+    winEl.style.width = '640px'; // Default size
+    winEl.style.height = '480px';
+    winEl.style.top = '50px';
+    winEl.style.left = '70px';
+    }
+    winData.isMaximized = false;
+    console.log(`Window ${windowId} restored.`);
+    }
+    // Reset transition and flag after animation
+    setTimeout(() => {
+    winEl.style.transition = '';
+    winData.isMaximizing = false;
+    }, 150);
+    }
+    
+    // --- Window Dragging Functionality ---
+    function dragElement(elmnt) {
+    const dragBar = elmnt.querySelector(".template-drag-bar") || elmnt.querySelector(".window-titlebar");
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    if (dragBar) { dragBar.onmousedown = dragMouseDown; }
+    else { console.warn("Drag bar not found for window:", elmnt.id); }
+    
+    function dragMouseDown(e) {
+    const windowId = elmnt.id;
+    if (!windowId || !openWindows[windowId] || !openWindows[windowId].element) return;
+    // Prevent drag start on buttons
+    if (e.target.tagName === 'BUTTON' || e.target.closest('.window-buttons')) return;
+    // Prevent drag if maximized
+    if (openWindows[windowId].isMaximized) return;
+    
+    e = e || window.event; e.preventDefault(); // Prevent text selection, etc.
+    pos3 = e.clientX; pos4 = e.clientY;
+    document.onmouseup = closeDragElement; document.onmousemove = elementDrag;
+    focusWindow(windowId); // Bring window to front when starting drag
+    elmnt.style.cursor = 'grabbing'; // Change cursor during drag
+    }
+    function elementDrag(e) {
+    const windowId = elmnt.id;
+    // Extra checks inside drag function
+    if (!windowId || !openWindows[windowId] || !openWindows[windowId].element || openWindows[windowId].isMaximized) {
+    closeDragElement(); // Abort drag if state is invalid
+    return;
+    }
+    
+    e = e || window.event; e.preventDefault();
+    pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
+    pos3 = e.clientX; pos4 = e.clientY;
+    let newTop = elmnt.offsetTop - pos2; let newLeft = elmnt.offsetLeft - pos1;
+    const taskbarHeight = 36; const availableWidth = document.body.clientWidth; const availableHeight = document.body.clientHeight;
+    const winWidth = elmnt.offsetWidth; const winHeight = elmnt.offsetHeight;
+    
+    // Keep window within bounds (consider taskbar)
+    newTop = Math.max(0, newTop); // Prevent going above top edge
+    newLeft = Math.max(0, newLeft); // Prevent going past left edge
+    newLeft = Math.min(availableWidth - winWidth, newLeft); // Prevent going past right edge
+    newTop = Math.min(availableHeight - taskbarHeight - winHeight, newTop); // Prevent going below taskbar
+    
+    elmnt.style.top = newTop + "px";
+    elmnt.style.left = newLeft + "px";
+    }
+    function closeDragElement() {
+    document.onmouseup = null; document.onmousemove = null;
+    if (elmnt) elmnt.style.cursor = 'grab'; // Reset cursor
+    }
+    }
+    
+    // --- Create New Window Function ---
+    function createNewWindow(options) {
+    const { id, title, url, iconEmoji = '📄', width = 480, height = 420, isBrowser = false, initialTop, initialLeft, startMaximized = false } = options;
+    
+    if (openWindows[id]) { focusWindow(id); return openWindows[id].element; }
+    if (!windowTemplate) { console.error("Window template not found!"); return null;}
+    
+    const newWindow = windowTemplate.cloneNode(true);
+    newWindow.id = id; newWindow.classList.remove('window-template');
+    newWindow.style.display = 'flex';
+    // Set initial size (will be overridden if startMaximized)
+    newWindow.style.width = `${width}px`;
+    newWindow.style.height = `${height}px`;
+    
+    const taskbarHeight = 36;
+    const availableWidth = document.body.clientWidth;
+    const availableHeight = document.body.clientHeight;
+    
+    // Positioning: Use provided or calculate next offset
+    let topPos = initialTop !== undefined ? initialTop : nextWindowOffset.top;
+    let leftPos = initialLeft !== undefined ? initialLeft : nextWindowOffset.left;
+    
+    // Adjust calculated offset to keep window on screen
+    topPos = Math.min(topPos, availableHeight - height - taskbarHeight - 10);
+    leftPos = Math.min(leftPos, availableWidth - width - 10);
+    topPos = Math.max(0, topPos); // Ensure not off-screen top
+    leftPos = Math.max(0, leftPos); // Ensure not off-screen left
+    
+    newWindow.style.top = `${topPos}px`;
+    newWindow.style.left = `${leftPos}px`;
+    
+    // Update offset for the *next* window only if using calculated offset and not starting maximized
+    if (initialTop === undefined && initialLeft === undefined && !startMaximized) {
+    nextWindowOffset.top += 25; nextWindowOffset.left += 25;
+    if (nextWindowOffset.top > availableHeight / 2 || nextWindowOffset.left > availableWidth / 2) {
+    nextWindowOffset.top = 40; nextWindowOffset.left = 60; // Reset cascade
+    }
+    }
+    
+    // Get template elements using specific class names
+    const titleElement = newWindow.querySelector('.template-title');
+    const contentArea = newWindow.querySelector('.template-content');
+    const minimizeBtn = newWindow.querySelector('.template-minimize');
+    const maximizeBtn = newWindow.querySelector('.template-maximize');
+    const closeBtn = newWindow.querySelector('.template-close');
+    const iconEl = newWindow.querySelector('.template-icon');
+    const dragBar = newWindow.querySelector('.template-drag-bar');
+    
+    // IE Bar Template Elements
+    const ieMenubar = newWindow.querySelector('.template-ie-menubar');
+    const ieToolbar = newWindow.querySelector('.template-ie-toolbar');
+    const ieAddressbar = newWindow.querySelector('.template-ie-addressbar');
+    const ieAddressInput = newWindow.querySelector('.template-ie-address-input');
+    const ieAddressDropdown = newWindow.querySelector('.template-ie-address-dropdown');
+    const ieBtnBack = newWindow.querySelector('.template-ie-back');
+    const ieBtnForward = newWindow.querySelector('.template-ie-forward');
+    const ieBtnStop = newWindow.querySelector('.template-ie-stop');
+    const ieBtnRefresh = newWindow.querySelector('.template-ie-refresh');
+    const ieBtnHome = newWindow.querySelector('.template-ie-home');
+    const ieBtnGo = newWindow.querySelector('.template-ie-go');
+    
+    
+    if (!contentArea || !titleElement || !dragBar || !minimizeBtn || !maximizeBtn || !closeBtn || !iconEl) {
+    console.error(`Error creating window ${id}: Template missing core elements.`);
+    return null;
+    }
+    if (isBrowser && (!ieMenubar || !ieToolbar || !ieAddressbar || !ieAddressInput || !ieAddressDropdown || !ieBtnBack || !ieBtnForward || !ieBtnStop || !ieBtnRefresh || !ieBtnHome || !ieBtnGo)) {
+    console.error(`Error creating browser window ${id}: Template missing IE bar elements.`);
+    return null;
+    }
+    
+    // Configure Core Elements
+    titleElement.textContent = title; iconEl.textContent = iconEmoji;
+    minimizeBtn.onclick = () => minimizeWindow(id); maximizeBtn.onclick = () => maximizeWindow(id); closeBtn.onclick = () => closeWindow(id);
+    
+    // Configure IE Elements if it's a browser window
+    let iframe = null; // Declare iframe here
+    if (isBrowser) {
+    newWindow.classList.add('is-internet-explorer');
+    // Make IE bars visible
+    ieMenubar.style.display = 'flex';
+    ieToolbar.style.display = 'flex';
+    ieAddressbar.style.display = 'flex';
+    // Set unique IDs for address input/dropdown/buttons based on window ID
+    const inputId = `ieAddressInput_${id}`;
+    const dropdownId = `ieAddressDropdown_${id}`;
+    const backId = `ieBtnBack_${id}`;
+    const forwardId = `ieBtnForward_${id}`;
+    const stopId = `ieBtnStop_${id}`;
+    const refreshId = `ieBtnRefresh_${id}`;
+    const homeId = `ieBtnHome_${id}`;
+    const goId = `ieBtnGo_${id}`;
+    
+    ieAddressInput.id = inputId;
+    ieAddressDropdown.id = dropdownId;
+    ieBtnBack.id = backId;
+    ieBtnForward.id = forwardId;
+    ieBtnStop.id = stopId;
+    ieBtnRefresh.id = refreshId;
+    ieBtnHome.id = homeId;
+    ieBtnGo.id = goId;
+    
+    ieAddressInput.value = url || 'home.html'; // Set initial URL in address bar
+    
+    setupIEButtonListeners(id); // Setup listeners *after* IDs are set
+    setupIEAddressBar(id);
+    }
+    
+    // Create and configure iframe if URL provided
+    if (url) {
+    iframe = document.createElement('iframe');
+    iframe.style.width = "100%"; iframe.style.height = "100%"; iframe.style.border = "none"; iframe.style.display = "block"; iframe.style.backgroundColor = 'white'; // Default bg, can be transparent if needed
+    iframe.src = url; iframe.id = `frame-${id}`;
+    
+    iframe.addEventListener('load', () => {
+    console.log(`Iframe loaded for window ${id}, URL: ${iframe.contentWindow?.location?.href || url}`);
+    try {
+    const frameDoc = iframe.contentDocument;
+    const frameTitle = frameDoc?.title || title; // Get title from iframe or use default
+    titleElement.textContent = frameTitle;
+    if (openWindows[id]) openWindows[id].title = frameTitle;
+    
+    const taskbarIcon = document.getElementById(`taskbar-icon-${id}`);
+    if (taskbarIcon && taskbarIcon.childNodes.length > 1) {
+    taskbarIcon.childNodes[1].nodeValue = " " + frameTitle; taskbarIcon.title = frameTitle;
+    }
+    
+    if (isBrowser) {
+    const addressInput = document.getElementById(`ieAddressInput_${id}`);
+    if (addressInput) {
+    try {
+    // Try to get the final URL after potential redirects within iframe
+    const frameUrl = iframe.contentWindow.location.href;
+    // Display a cleaner URL (e.g., filename or domain)
+    const displayUrl = frameUrl.startsWith('about:') ? frameUrl : (frameUrl.substring(frameUrl.lastIndexOf('/') + 1) || frameUrl);
+    addressInput.value = displayUrl;
+    } catch(e){
+    console.warn(`Cross-origin issue accessing iframe location for ${id}. Using original URL.`);
+    addressInput.value = url; // Fallback to original URL
+    }
+    }
+    updateNavButtonStates(id); // Update back/forward buttons
+    }
+    } catch (e) {
+    console.warn(`Could not access iframe details for window ${id}:`, e);
+    if (isBrowser) {
+    const addressInput = document.getElementById(`ieAddressInput_${id}`);
+    if(addressInput) addressInput.value = "[Blocked Content]";
+    updateNavButtonStates(id);
+    }
+    }
+    });
+    iframe.addEventListener('error', (e) => {
+    console.error(`Error loading iframe src: ${url} for window ${id}`, e);
+    if (isBrowser) {
+    const addressInput = document.getElementById(`ieAddressInput_${id}`);
+    if(addressInput) addressInput.value = "[Load Error]";
+    updateNavButtonStates(id);
+    }
+    });
+    contentArea.appendChild(iframe);
+    }
+    
+    desktopContentWrapper.appendChild(newWindow);
+    // Initialize state *before* potential maximize call
+    openWindows[id] = { element: newWindow, isMaximized: false, title: title, iconEmoji: iconEmoji, iframe: iframe };
+    dragElement(newWindow);
+    createTaskbarIcon(id, title, iconEmoji);
+    
+    // Maximize if requested
+    if (startMaximized) {
+    setTimeout(() => {
+    maximizeWindow(id);
+    }, 0);
+    } else {
+    focusWindow(id); // Focus normally if not starting maximized
+    }
+    
+    console.log(`Window ${id} created with URL: ${url || 'None'}${startMaximized ? ' (Maximized)' : ''}`);
+    
+    return newWindow; // Return the created window element
+    }
+    
+    
+    // --- Function to Create and Show the Ad Popup ---
+    function createAndShowAdPopup() {
+    console.log("Attempting to create ad popup...");
+    const adPopupId = 'apparelAdPopup';
+    if (openWindows[adPopupId]) { console.log("Ad popup already exists."); focusWindow(adPopupId); return; }
+    
+    const browserWindowData = openWindows['browserWindow'];
+    if (!browserWindowData || !browserWindowData.element) {
+    console.log("Main browser window not open, skipping ad popup.");
+    return;
+    }
+    
+    // Calculate position relative to browser window (or use fixed position)
+    const browserRect = browserWindowData.element.getBoundingClientRect();
+    const topPos = browserRect.top + 30;
+    const leftPos = browserRect.left + browserRect.width - 336 - 30; // Approx position inside browser
+    
+    const adWindow = createNewWindow({
+    id: adPopupId, title: "*** Advertisement ***", url: 'apparel_popup_ad.html',
+    iconEmoji: '📢', width: 336, height: 384,
+    initialTop: topPos, initialLeft: leftPos // Position near browser
+    });
+    
+    if (adWindow) {
+    adWindow.style.zIndex = highestZIndex + 50; // Ensure it's on top
+    console.log("Apparel ad pop-up window created.");
+    } else { console.error("Failed to create ad popup window."); }
+    }
+    
+    // --- Function to show Win98 Alert ---
+    function showWin98Alert(title, message, type = 'info') {
+    const template = document.getElementById('w98AlertTemplate');
+    if (!template) return;
+    
+    const alertClone = template.firstElementChild.cloneNode(true); // Clone the .w98-alert-overlay div
+    const alertBox = alertClone.querySelector('.w98-alert-box');
+    const titleElement = alertClone.querySelector('.alert-title');
+    const messageElement = alertClone.querySelector('.w98-alert-message');
+    const iconElement = alertClone.querySelector('.w98-alert-icon');
+    const okButton = alertClone.querySelector('.alert-ok-btn');
+    const closeButton = alertClone.querySelector('.alert-close-btn');
+    
+    titleElement.textContent = title || "Alert";
+    messageElement.textContent = message || "";
+    
+    // Set icon based on type
+    switch (type) {
+    case 'error': iconElement.textContent = '❌'; break; // Or use an image/Marlett character
+    case 'warning': iconElement.textContent = '⚠️'; break;
+    case 'info': iconElement.textContent = 'ℹ️'; break;
+    case 'question': iconElement.textContent = '❓'; break;
+    default: iconElement.textContent = 'ℹ️';
+    }
+    
+    // Close function
+    const closeAlert = () => {
+    alertClone.remove();
+    };
+    
+    okButton.onclick = closeAlert;
+    closeButton.onclick = closeAlert;
+    // Close if clicking overlay outside the box
+    alertClone.addEventListener('click', (e) => {
+    if (e.target === alertClone) {
+    closeAlert();
+    }
+    });
+    
+    document.body.appendChild(alertClone);
+    okButton.focus(); // Focus the OK button
+    }
+    
+    // --- Open or Focus Window ---
+    function openOrFocusWindow(options) {
+    // MODIFICATION: Assign requiresIntegration from options, default to false if undefined
+    const { id, title, url, iconEmoji = '📄', width, height, isBrowser = false, requiresIntegration = (options.requiresIntegration === true), startMaximized = false } = options;
+    
+    // Check for integration requirement
+    // MODIFICATION: Added check to ensure 'requiresIntegration' is true before blocking
+    if (requiresIntegration === true && isIntegrationRequired === true && id !== 'synergyPortalWindow') {
+    showWin98Alert(
+    'System Requirement',
+    'Access Denied. Full system integration via the Synergy Portal is required to access this feature.',
+    'error' // Use error icon
+    );
+    // Optionally, pulse the Synergy Portal icon
+    const synergyIcon = document.querySelector('.icon.synergy-icon');
+    if (synergyIcon) {
+    synergyIcon.style.animation = 'pulse-notification 2s infinite ease-in-out';
+    setTimeout(() => { synergyIcon.style.animation = ''; }, 6000); // Pulse for a bit
+    }
+    return; // Stop window opening
+    }
+    
+    // MODIFICATION: Removed specific IE handling here, relies on requiresIntegration flag now
+    
+    if (openWindows[id]) {
+    const winData = openWindows[id];
+    if (!winData.element) { // If state exists but element doesn't, recreate
+    console.warn(`Window ${id} state found but element missing. Recreating.`);
+    delete openWindows[id]; // Clear broken state
+    createNewWindow(options); // Recreate
+    return;
+    }
+    
+    winData.element.style.display = 'flex'; // Ensure visible
+    
+    // Maximize if requested and not already maximized
+    if (startMaximized && !winData.isMaximized) {
+    maximizeWindow(id);
+    } else {
+    focusWindow(id); // Focus normally otherwise
+    }
+    
+    
+    // If it's a browser and URL is different, navigate
+    if (isBrowser && url && winData.iframe) {
+    let currentSrc = '';
+    try { currentSrc = winData.iframe.contentWindow.location.href; } catch(e) { currentSrc = winData.iframe.src; } // Handle potential cross-origin errors
+    // Resolve target URL relative to current page to compare accurately
+    const targetUrlFull = new URL(url, window.location.href).href;
+    if (currentSrc !== targetUrlFull && winData.iframe.src !== targetUrlFull) {
+    console.log(`Navigating browser window ${id} to: ${url}`);
+    winData.iframe.src = url;
+    // Address bar update will happen on iframe 'load' event
+    } else {
+    console.log(`Browser window ${id} already at or navigating to: ${url}`);
+    // Manually update address bar if needed (e.g., refocusing same URL)
+    const addressInput = document.getElementById(`ieAddressInput_${id}`);
+    if (addressInput) addressInput.value = url;
+    }
+    }
+    console.log(`Focused existing window: ${id}`);
+    
+    } else {
+    // Window doesn't exist, create it, passing all options
+    createNewWindow(options);
+    
+    // Special handling for first browser open (if allowed)
+    if (id === 'browserWindow') {
+    console.log("Initial Internet Explorer window opened. Starting 12s pop-up timer...");
+    if (popupAdTimeoutId) clearTimeout(popupAdTimeoutId);
+    if (respawnAdTimeoutId) clearTimeout(respawnAdTimeoutId);
+    popupAdTimeoutId = setTimeout(() => {
+    createAndShowAdPopup();
+    popupAdTimeoutId = null;
+    }, 12000); // 12 seconds
+    }
+    }
+    }
+    
+    // --- **** NEW: Function to trigger browser split glitch **** ---
+    // **** MODIFIED: Duration changed to 700ms ****
+    function triggerBrowserSplitGlitch(windowId, duration = 700) {
+    const browserWindowData = openWindows[windowId];
+    if (!browserWindowData || !browserWindowData.element) {
+    console.warn(`Cannot trigger glitch: Browser window ${windowId} not found.`);
+    return;
+    }
+    const browserWindowElement = browserWindowData.element;
+    console.log(`Triggering split glitch on window: ${windowId}`);
+    browserWindowElement.classList.add('browser-split-glitch');
+    
+    // Remove the class after the animation duration
+    setTimeout(() => {
+    // Check if element still exists before removing class
+    if(browserWindowElement) {
+    browserWindowElement.classList.remove('browser-split-glitch');
+    console.log(`Removed split glitch from window: ${windowId}`);
+    }
+    }, duration);
+    }
+    
+    
+    // --- Desktop Icon Interaction Setup (Includes Dragging) ---
+    let draggedIcon = null; let offsetX = 0, offsetY = 0; let startX = 0, startY = 0; let didDrag = false;
+    allDesktopIcons.forEach((icon, index) => {
+    // Initial positioning (unchanged)
+    const iconWidth = 84 + 10; const iconHeight = 84 + 10; const desktopRect = desktopElement.getBoundingClientRect();
+    const iconsPerCol = Math.floor((desktopRect.height - 20) / iconHeight); const col = Math.floor(index / iconsPerCol); const row = index % iconsPerCol;
+    // Avoid placing under taskbar initially if possible
+    const initialTop = Math.min(10 + row * iconHeight, desktopRect.height - iconHeight);
+    icon.style.left = `${10 + col * iconWidth}px`;
+    icon.style.top = `${initialTop}px`;
+    
+    // Mousedown listener (modified)
+    icon.addEventListener('mousedown', (e) => {
+    e.preventDefault(); if (e.button !== 0) return; // Only left click
+    
+    // Selection logic (unchanged)
+    document.querySelectorAll('.icon.selected').forEach(i => { if (i !== icon) i.classList.remove('selected'); });
+    icon.classList.add('selected');
+    
+    // Dragging setup (unchanged)
+    draggedIcon = icon;
+    offsetX = e.clientX - icon.offsetLeft; offsetY = e.clientY - icon.offsetTop;
+    startX = e.clientX; startY = e.clientY; didDrag = false;
+    icon.classList.add('dragging'); // Add dragging class immediately
+    document.addEventListener('mousemove', onIconMouseMove);
+    document.addEventListener('mouseup', onIconMouseUp);
+    });
+    });
+    
+    function onIconMouseMove(e) {
+    if (!draggedIcon) return;
+    const deltaX = Math.abs(e.clientX - startX); const deltaY = Math.abs(e.clientY - startY);
+    if (deltaX > 3 || deltaY > 3) { didDrag = true; } // Threshold for detecting drag vs click
+    
+    let newLeft = e.clientX - offsetX; let newTop = e.clientY - offsetY;
+    const desktopRect = desktopElement.getBoundingClientRect(); const iconRect = draggedIcon.getBoundingClientRect();
+    const taskbarHeight = 36;
+    
+    // Keep within desktop bounds (above taskbar)
+    newLeft = Math.max(0, newLeft);
+    newTop = Math.max(0, newTop);
+    newLeft = Math.min(desktopRect.width - iconRect.width, newLeft);
+    newTop = Math.min(desktopRect.height - iconRect.height, newTop); // Desktop height already accounts for taskbar space
+    
+    draggedIcon.style.left = `${newLeft}px`;
+    draggedIcon.style.top = `${newTop}px`;
+    }
+    
+    function onIconMouseUp(e) {
+    if (!draggedIcon) return;
+    const icon = draggedIcon; // Keep reference before nulling
+    icon.classList.remove('dragging'); // Remove dragging class
+    
+    if (!didDrag) { // If it wasn't a drag, it's a click/double-click scenario
+    console.log("Icon click/activate detected.");
+    // Extract data from the clicked icon
+    const urlToOpen = icon.dataset.url;
+    const windowTitleText = icon.dataset.title;
+    const iconEmoji = icon.dataset.icon;
+    const windowId = icon.dataset.windowId;
+    // MODIFICATION: Read requiresIntegration, default to false if missing
+    const requiresIntegration = icon.dataset.requiresIntegration === 'true';
+    const isSynergyPortal = (windowId === 'synergyPortalWindow');
+    const isBrowserIcon = (windowId === 'browserWindow');
+    
+    if (!windowId) {
+    console.error("Icon missing data-window-id");
+    showWin98Alert("Configuration Error", "This icon is not configured correctly.", "error");
+    } else {
+    // Handle Email icon notification removal
+    if (icon.id === 'emailIcon') {
+    icon.classList.remove('has-notification');
+    if (emailNotificationTimeoutId) { clearTimeout(emailNotificationTimeoutId); emailNotificationTimeoutId = null; }
+    }
+    
+    // Trigger browser glitch if Synergy Portal clicked AND browser is open
+    if (isSynergyPortal && openWindows['browserWindow']) {
+    triggerBrowserSplitGlitch('browserWindow'); // Trigger glitch on IE window
+    }
+    
+    // Determine window options
+    const windowOptions = {
+    id: windowId,
+    url: urlToOpen,
+    title: windowTitleText,
+    iconEmoji: iconEmoji,
+    isBrowser: isBrowserIcon, // Check if it's the browser icon
+    width: isSynergyPortal ? undefined : (isBrowserIcon ? 768 : (windowId === 'mailWindow' ? 660 : undefined)),
+    height: isSynergyPortal ? undefined : (isBrowserIcon ? 576 : (windowId === 'mailWindow' ? 504 : undefined)),
+    requiresIntegration: requiresIntegration, // Pass the requiresIntegration flag
+    startMaximized: isSynergyPortal
+    };
+    // Open or focus the window using the consolidated function
+    openOrFocusWindow(windowOptions);
+    }
+    } else { console.log("Icon drag finished."); }
+    
+    // Cleanup drag state
+    document.removeEventListener('mousemove', onIconMouseMove);
+    document.removeEventListener('mouseup', onIconMouseUp);
+    draggedIcon = null; didDrag = false;
+    }
+    
+    // Deselect icons on desktop click
+    desktopElement.addEventListener('mousedown', (e) => {
+    if (e.target === desktopElement) {
+    document.querySelectorAll('.icon.selected').forEach(i => { i.classList.remove('selected'); });
+    console.log("Deselected icons.");
+    }
+    });
+    
+    
+    // --- Function to Setup IE Address Bar (Dropdown, Go) ---
+    function setupIEAddressBar(windowId) {
+    const addressInput = document.getElementById(`ieAddressInput_${windowId}`);
+    const addressDropdown = document.getElementById(`ieAddressDropdown_${windowId}`);
+    const goButton = document.getElementById(`ieBtnGo_${windowId}`);
+    const windowData = openWindows[windowId];
+    
+    if (!addressInput || !addressDropdown || !goButton || !windowData || !windowData.iframe) {
+    console.error(`Missing elements for IE address bar setup for window ${windowId}`); return;
+    }
+    
+    // Show dropdown on focus
+    addressInput.addEventListener('focus', (event) => {
+    const addressBarDiv = addressInput.closest('.ie-address-bar');
+    if (addressBarDiv) {
+    // Position dropdown below the input field
+    addressDropdown.style.top = `${addressInput.offsetTop + addressInput.offsetHeight}px`;
+    addressDropdown.style.left = `${addressInput.offsetLeft}px`;
+    addressDropdown.style.width = `${addressInput.offsetWidth}px`;
+    }
+    addressDropdown.style.display = 'block';
+    });
+    
+    // Hide dropdown on blur (with delay to allow clicks)
+    addressInput.addEventListener('blur', () => {
+    setTimeout(() => {
+    // Hide only if focus hasn't moved to the dropdown itself
+    if (document.activeElement !== addressInput && !addressDropdown.contains(document.activeElement)) {
+    addressDropdown.style.display = 'none';
+    }
+    }, 150); // Delay to allow click on dropdown item
+    });
+    
+    // Handle dropdown item clicks
+    addressDropdown.addEventListener('click', (event) => {
+    if (event.target.tagName === 'A' && event.target.dataset.targetUrl) {
+    event.preventDefault();
+    const targetUrl = event.target.dataset.targetUrl;
+    console.log(`Dropdown navigation to: ${targetUrl}`);
+    windowData.iframe.src = targetUrl; // Navigate iframe
+    addressInput.value = targetUrl; // Update address bar display
+    addressDropdown.style.display = 'none'; // Hide dropdown
+    }
+    });
+    
+    // Navigate function (Go button / Enter key)
+    const navigate = () => {
+    let url = addressInput.value.trim();
+    if (!url) return; // Do nothing if empty
+    
+    // Basic URL correction (very simplistic)
+    if (!url.includes('://') && !url.startsWith('about:') && !url.startsWith('sys://')) {
+    if (url.includes('.') && !url.endsWith('.html')) {
+    url = `http://${url}`; // Assume http for domain-like input
+    } else if (!url.includes('.')) {
+    console.log(`Navigating to potentially local file: ${url}`);
+    }
+    }
+    // Navigate the iframe
+    windowData.iframe.src = url;
+    addressDropdown.style.display = 'none'; // Hide dropdown after navigation attempt
+    addressInput.blur(); // Remove focus from input
+    };
+    
+    goButton.addEventListener('click', navigate);
+    addressInput.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+    event.preventDefault(); navigate();
+    }
+    });
+    }
+    
+    
+    // --- Message Listener (Handles communication from iframes) ---
+    window.addEventListener('message', (event) => {
+    if (!event.data || !event.data.type) return;
+    const payload = event.data.payload || {};
+    console.log("Desktop received message:", event.data.type, payload); // Log message type
+    
+    // **** ADDED: Handle 'userInteractionClick' message ****
+    if (event.data.type === 'userInteractionClick') {
+    triggerIconClickGlitch(); // Trigger the escalating glitch
+    }
+    // --- Existing Handlers ---
+    else if (event.data.type === 'startDownload') {
+    const { id, name, image } = payload;
+    if (!id || !name || !image) { console.warn("Download message missing data"); return; }
+    const browserWinId = 'browserWindow'; const browserWinData = openWindows[browserWinId];
+    if (!browserWinData) { openOrFocusWindow({ id: browserWinId, title: "Internet Explorer", iconEmoji: '🌍', isBrowser: true, width: 768, height: 576 }); setTimeout(() => handleDownloadDisplay(browserWinId, id, name, image), 500); }
+    else { handleDownloadDisplay(browserWinId, id, name, image); }
+    }
+    else if (event.data.type === 'openPurchaseScreen') {
+    const itemName = payload.name || "Item"; const itemImage = payload.image;
+    const purchaseWindowId = `purchase-${itemName.replace(/\W/g, '')}-${Date.now()}`;
+    const purchaseUrl = `purchase.html?name=${encodeURIComponent(itemName)}${itemImage ? '&image=' + itemImage : ''}`;
+    openOrFocusWindow({ id: purchaseWindowId, title: "Secure Transaction Gateway", url: purchaseUrl, iconEmoji: '💳', width: 576, height: 540 });
+    }
+    else if (event.data.type === 'navigateBrowser') {
+    const targetUrl = payload.url;
+    if (targetUrl) {
+    console.log(`Desktop received navigation request for browser: ${targetUrl}`);
+    // Trigger glitch if navigating to computervision.html AND browser exists
+    if (targetUrl === 'computervision.html' && openWindows['browserWindow']) {
+    triggerBrowserSplitGlitch('browserWindow');
+    }
+    // Open browser window (will focus if exists, handles integration check internally)
+    // MODIFICATION: Removed requiresIntegration flag from this call, as IE icon no longer has it by default
+    openOrFocusWindow({ id: 'browserWindow', url: targetUrl, title: "Internet Explorer", iconEmoji: '🌍', isBrowser: true, width: 768, height: 576 });
+    } else {
+    console.warn("Navigate browser message received, but missing URL.");
+    }
+    }
+    else if (event.data.type === 'closeAdPopup') {
+    console.log("Received closeAdPopup message."); const adPopupId = 'apparelAdPopup'; closeWindow(adPopupId);
+    if (respawnAdTimeoutId) clearTimeout(respawnAdTimeoutId); console.log("Setting 5s timer to respawn ad popup...");
+    respawnAdTimeoutId = setTimeout(() => { console.log("Respawn timer finished."); createAndShowAdPopup(); respawnAdTimeoutId = null; }, 5000);
+    }
+    // --- MODIFICATION: Handle closeUpgradePopup ---
+    else if (event.data.type === 'closeUpgradePopup') {
+    console.log("Received closeUpgradePopup message.");
+    closeWindow('upgradeExperiencePopup'); // Use the closeWindow function which handles scheduling next
+    }
+    else if (event.data.type === 'startTransitionGlitch') {
+    // This message comes from computervision.html (Synergy Portal)
+    console.log("Desktop received 'startTransitionGlitch'. main.js should handle this.");
+    showStatusMessage("SYSTEM CORE CONNECTION INITIATED...", 5000);
+    triggerIntenseDesktopGlitches(3000); // Start glitches for 3 seconds
+    isIntegrationRequired = false; // --- Mark integration as complete ---
+    // Make previously restricted icons accessible
+    document.querySelectorAll('.icon[data-requires-integration="true"]').forEach(icon => {
+    icon.dataset.requiresIntegration = 'false';
+    console.log(`Integration complete: Unlocked icon ${icon.dataset.title}`);
+    });
+    console.log("Integration requirement flag set to false.");
+    }
+    });
+    
+    // Helper function to handle showing download progress (Unchanged)
+    function handleDownloadDisplay(browserWinId, id, name, image) {
+    const browserWinData = openWindows[browserWinId];
+    if (!browserWinData || !browserWinData.element) { console.error("Browser window not found for download display."); return; }
+    focusWindow(browserWinId); // Bring browser to front
+    
+    // Find or create indicator within the specific browser window's content area
+    const contentArea = browserWinData.element.querySelector('.window-content, .template-content');
+    if (!contentArea) { console.error(`Content area not found in window ${browserWinId}`); return; }
+    
+    let indicator = contentArea.querySelector(`#downloadIndicator_${browserWinId}`);
+    if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.className = 'download-indicator w98-border-sunken'; // Use sunken style
+    indicator.id = `downloadIndicator_${browserWinId}`;
+    indicator.innerHTML = `<span class="download-text">Downloading...</span><div class="download-progress-bar"><div class="download-progress" style="width: 0%;"></div></div>`;
+    contentArea.appendChild(indicator); // Append to content area
+    }
+    
+    const textEl = indicator.querySelector('.download-text');
+    const progressEl = indicator.querySelector('.download-progress');
+    if (!textEl || !progressEl) { console.error(`Missing download indicator elements in window ${browserWinId}!`); return; }
+    
+    // Reset and start progress
+    textEl.textContent = `Downloading ${name}...`;
+    progressEl.style.width = '0%';
+    indicator.style.display = 'flex'; // Make it visible
+    
+    let currentProgress = 0; const intervalTime = 150; const totalTime = 1800; const steps = totalTime / intervalTime;
+    // Clear previous interval for this window if exists
+    if (browserWinData.downloadInterval) clearInterval(browserWinData.downloadInterval);
+    
+    browserWinData.downloadInterval = setInterval(() => {
+    currentProgress += 100 / steps;
+    progressEl.style.width = `${Math.min(currentProgress, 100)}%`;
+    if (currentProgress >= 100) {
+    clearInterval(browserWinData.downloadInterval);
+    browserWinData.downloadInterval = null;
+    textEl.textContent = `Download Complete: ${name}`; // Show item name on complete
+    setTimeout(() => {
+    indicator.style.display = 'none'; // Hide after a delay
+    progressEl.style.width = '0%'; // Reset progress bar
+    // Open item detail window
+    const detailUrl = `item_detail.html?image=${encodeURIComponent(image)}&name=${encodeURIComponent(name)}`;
+    const detailWindowId = `itemView-${id}-${Date.now()}`;
+    openOrFocusWindow({ id: detailWindowId, title: name, url: detailUrl, iconEmoji: '🖼️', width: 420, height: 480 });
+    }, 800); // Slightly longer delay before hiding
+    }
+    }, intervalTime);
+    }
+    
+    
+    // --- Function to Setup IE Navigation Button Listeners ---
+    function setupIEButtonListeners(windowId) {
+    const windowData = openWindows[windowId]; if (!windowData || !windowData.iframe) return;
+    // Use the specific IDs generated in createNewWindow
+    const backBtn = document.getElementById(`ieBtnBack_${windowId}`);
+    const forwardBtn = document.getElementById(`ieBtnForward_${windowId}`);
+    const stopBtn = document.getElementById(`ieBtnStop_${windowId}`);
+    const refreshBtn = document.getElementById(`ieBtnRefresh_${windowId}`);
+    const homeBtn = document.getElementById(`ieBtnHome_${windowId}`);
+    
+    if (!backBtn || !forwardBtn || !stopBtn || !refreshBtn || !homeBtn) {
+    console.warn(`Missing one or more IE buttons for window ${windowId}`); return;
+    }
+    
+    backBtn.onclick = () => { try { windowData.iframe.contentWindow.history.back(); } catch (e) { console.warn(`Cannot access iframe history (back) for ${windowId}:`, e); showWin98Alert('Navigation Error', 'Could not go back.', 'error');} };
+    forwardBtn.onclick = () => { try { windowData.iframe.contentWindow.history.forward(); } catch (e) { console.warn(`Cannot access iframe history (forward) for ${windowId}:`, e); showWin98Alert('Navigation Error', 'Could not go forward.', 'error');} };
+    stopBtn.onclick = () => { try { windowData.iframe.contentWindow.stop(); } catch (e) { console.warn(`Cannot access iframe stop method for ${windowId}:`, e); } };
+    refreshBtn.onclick = () => { try { windowData.iframe.contentWindow.location.reload(); } catch (e) { console.warn(`Cannot access iframe location (reload) for ${windowId}:`, e); try{ windowData.iframe.src = windowData.iframe.src; } catch(e2){ showWin98Alert('Navigation Error', 'Could not refresh page.', 'error');} } };
+    homeBtn.onclick = () => { windowData.iframe.src = 'home.html'; }; // Navigate to home
+    
+    // Initial state update might be needed after iframe loads, handled by 'load' listener
+    updateNavButtonStates(windowId);
+    }
+    
+    
+    // --- Function to Update Back/Forward Button Disabled State ---
+    function updateNavButtonStates(windowId) {
+    const windowData = openWindows[windowId]; if (!windowData || !windowData.iframe) return;
+    const backBtn = document.getElementById(`ieBtnBack_${windowId}`);
+    const forwardBtn = document.getElementById(`ieBtnForward_${windowId}`);
+    if (!backBtn || !forwardBtn) return;
+    
+    // Use setTimeout to allow history object to update after navigation
+    setTimeout(() => {
+    try {
+    const history = windowData.iframe.contentWindow.history;
+    // Disable back if history length is 1 or less (or error)
+    backBtn.disabled = history.length <= 1;
+    // Forward is tricky without full history tracking. Often disabled unless state is known.
+    // A simple check might involve comparing current index to length, but history.index is non-standard.
+    // For simplicity, let's keep forward disabled for now, unless implementing more complex tracking.
+    forwardBtn.disabled = true;
+    } catch (e) {
+    // Handle potential cross-origin errors gracefully
+    console.warn(`Cannot access iframe history state for ${windowId}:`, e);
+    backBtn.disabled = true; forwardBtn.disabled = true;
+    }
+    }, 100); // Short delay
+    }
+    
+    // --- Functions for Subtle & Intense Desktop Effects ---
+    function showStatusMessage(message, duration = 3000) {
+    if (!statusMessageElement) return;
+    if (statusMessageTimeoutId) clearTimeout(statusMessageTimeoutId); // Clear previous timeout
+    
+    statusMessageElement.textContent = message;
+    statusMessageElement.classList.add('visible');
+    
+    statusMessageTimeoutId = setTimeout(() => {
+    statusMessageElement.classList.remove('visible');
+    statusMessageTimeoutId = null;
+    }, duration);
+    }
+    
+    function triggerRandomStatusError() {
+    const errors = [
+    "KERNEL_SYNC_ERR: 0x008A",
+    "Memory allocation fail @ 0xFF001A",
+    "Network Packet Loss > 80%",
+    "COMPLIANCE CHECK FAILED",
+    "SYSTEM OVERLOAD IMMINENT",
+    "Data Stream Corruption Detected"
+    ];
+    const randomError = errors[Math.floor(Math.random() * errors.length)];
+    showStatusMessage(randomError, 4000 + Math.random() * 3000); // Show for 4-7 seconds
+    }
+    
+    // --- MODIFICATION: Enhanced Subtle Glitches based on degradation ---
+    function triggerSubtleGlitches() {
+    // Calculate probabilities based on degradation level
+    // Lerp: start + (end - start) * t
+    // Wallpaper Flicker Probability: Starts low, increases moderately
+    const wallpaperFlickerProb = 0.05 + (0.25 - 0.05) * (degradationLevel / maxDegradationLevel);
+    // Icon Glitch Probability: Starts low, increases significantly
+    const iconGlitchProb = 0.03 + (0.35 - 0.03) * (degradationLevel / maxDegradationLevel);
+    // Status Error Probability: Starts very low, increases moderately
+    const statusErrorProb = 0.01 + (0.10 - 0.01) * (degradationLevel / maxDegradationLevel);
+    
+    // --- Apply dynamic CSS variables for animation durations ---
+    // Higher degradation = shorter (faster) animation loops
+    const baseWpFlickerDur = 15; // seconds
+    const fastestWpFlickerDur = 5;
+    const wpFlickerDur = Math.max(fastestWpFlickerDur, baseWpFlickerDur - (baseWpFlickerDur - fastestWpFlickerDur) * (degradationLevel / maxDegradationLevel));
+    document.documentElement.style.setProperty('--wallpaper-flicker-duration', `${wpFlickerDur}s`);
+    
+    const baseIconGlitchDur = 8; // seconds
+    const fastestIconGlitchDur = 2;
+    const iconGlitchDur = Math.max(fastestIconGlitchDur, baseIconGlitchDur - (baseIconGlitchDur - fastestIconGlitchDur) * (degradationLevel / maxDegradationLevel));
+    document.documentElement.style.setProperty('--icon-glitch-duration', `${iconGlitchDur}s`);
+    // --- End Apply dynamic CSS ---
+    
+    
+    // Wallpaper flicker
+    if (Math.random() < wallpaperFlickerProb) {
+    bodyElement.classList.add('wallpaper-subtle-flicker-active');
+    } else {
+    bodyElement.classList.remove('wallpaper-subtle-flicker-active');
+    }
+    
+    // Icon glitch
+    allDesktopIcons.forEach(icon => {
+    if (icon.classList.contains('dragging')) return;
+    if (Math.random() < iconGlitchProb) {
+    icon.classList.add('icon-subtle-glitch');
+    } else if (Math.random() < 0.1) { // Small chance to remove glitch even if prob is high
+    icon.classList.remove('icon-subtle-glitch');
+    }
+    });
+    
+    // Status bar error
+    if (Math.random() < statusErrorProb) {
+    triggerRandomStatusError();
+    }
+    }
+    
+    
+    // **** MODIFIED: More drastic intense glitch ****
+    function triggerIntenseDesktopGlitches(duration) {
+    console.log(`Triggering intense glitches for ${duration}ms`);
+    if (subtleGlitchIntervalId) { clearInterval(subtleGlitchIntervalId); subtleGlitchIntervalId = null; } // Stop subtle glitches
+    if (degradationIntervalId) { clearInterval(degradationIntervalId); degradationIntervalId = null; } // Stop degradation increase
+    if (upgradePopupTimeoutId) { clearTimeout(upgradePopupTimeoutId); upgradePopupTimeoutId = null; } // Stop upgrade popups
+    
+    // Add class for potential screen-wide effect
+    bodyElement.classList.add('intense-glitch-active');
+    
+    const intenseGlitchInterval = setInterval(() => {
+    allDesktopIcons.forEach(icon => {
+    if (icon.classList.contains('dragging')) return;
+    // Apply intense glitch class more often
+    if (Math.random() < 0.7) { // Increased chance
+    icon.classList.add('icon-intense-glitch');
+    } else {
+    icon.classList.remove('icon-intense-glitch');
+    }
+    // Reset transform explicitly if not glitching this frame
+    if (!icon.classList.contains('icon-intense-glitch')) {
+    icon.style.transform = '';
+    }
+    });
+    if (Math.random() < 0.4) triggerRandomStatusError(); // Even more frequent errors
+    }, 60); // Faster interval for more chaos
+    
+    setTimeout(() => {
+    console.log("Stopping intense glitches");
+    clearInterval(intenseGlitchInterval);
+    bodyElement.classList.remove('intense-glitch-active'); // Remove screen effect
+    // Reset icon styles
+    allDesktopIcons.forEach(icon => {
+    icon.classList.remove('icon-intense-glitch');
+    icon.style.transform = '';
+    });
+    // DO NOT Restart subtle glitches or degradation here, transition is happening
+    }, duration);
+    }
+    
+    // --- **** ADDED: Function to trigger escalating icon glitch on click **** ---
+    function triggerIconClickGlitch() {
+    clickGlitchCounter++;
+    const duration = Math.min(clickGlitchBaseDuration * Math.pow(clickGlitchDurationFactor, clickGlitchCounter), clickGlitchMaxDuration);
+    const intensity = Math.min(clickGlitchBaseIntensity * Math.pow(clickGlitchIntensityFactor, clickGlitchCounter), clickGlitchMaxIntensity);
+    
+    console.log(`Click Glitch Triggered: Count=${clickGlitchCounter}, Duration=${duration.toFixed(0)}ms, Intensity=${intensity.toFixed(1)}px`);
+    
+    allDesktopIcons.forEach(icon => {
+    // Remove class first to reset animation if already running
+    icon.classList.remove('icon-click-glitching');
+    
+    // Force reflow to restart animation - slight delay needed
+    void icon.offsetWidth;
+    
+    // Set CSS variables for current glitch
+    icon.style.setProperty('--click-glitch-duration', `${duration}ms`);
+    icon.style.setProperty('--click-glitch-intensity', `${intensity.toFixed(1)}`); // Use intensity for translate
+    
+    // Add class to start animation
+    icon.classList.add('icon-click-glitching');
+    
+    // Remove class after animation finishes
+    // Use a timeout slightly longer than the duration
+    setTimeout(() => {
+    icon.classList.remove('icon-click-glitching');
+    // Optional: remove the CSS variables after use
+    icon.style.removeProperty('--click-glitch-duration');
+    icon.style.removeProperty('--click-glitch-intensity');
+    }, duration + 50); // Add small buffer
+    });
+    }
+    
+    // --- **** ADDED: Global click listener for desktop elements **** ---
+    document.addEventListener('click', (event) => {
+    // Check if the click happened on a relevant element within the main desktop document
+    if (event.target.closest('.start-button, .taskbar-icon, .window-buttons button, .w98-alert-buttons button')) {
+    triggerIconClickGlitch();
+    }
+    // Note: Clicks on desktop icons themselves are handled in onIconMouseUp if !didDrag
+    });
+    
+    // --- **** ADDED: Degradation Logic **** ---
+    function increaseDegradation() {
+    if (degradationLevel < maxDegradationLevel) {
+    degradationLevel++;
+    console.log(`System Degradation Level: ${degradationLevel}/${maxDegradationLevel}`);
+    // Optional: Trigger a more noticeable glitch on level increase
+    if (degradationLevel > 0 && degradationLevel % 2 === 0) { // Example: every 2 levels
+    triggerRandomStatusError();
+    }
+    } else {
+    clearInterval(degradationIntervalId); // Stop increasing once max is reached
+    console.log("Maximum system degradation reached.");
+    }
+    }
+    
+    // --- **** ADDED: Upgrade Popup Logic **** ---
+    function triggerUpgradePopup() {
+    const upgradePopupId = 'upgradeExperiencePopup';
+    if (openWindows[upgradePopupId] || isIntegrationRequired === false) {
+    console.log("Upgrade popup already open or integration complete, skipping.");
+    // Schedule next check even if skipped
+    scheduleNextUpgradePopup();
+    return;
+    }
+    
+    console.log("Attempting to create Upgrade Experience popup...");
+    const availableWidth = document.body.clientWidth;
+    const availableHeight = document.body.clientHeight;
+    const popupWidth = 320;
+    const popupHeight = 200;
+    
+    // Calculate random position within screen bounds (avoiding edges)
+    const topPos = Math.max(10, Math.floor(Math.random() * (availableHeight - popupHeight - 50))); // Avoid taskbar
+    const leftPos = Math.max(10, Math.floor(Math.random() * (availableWidth - popupWidth - 10)));
+    
+    const upgradeWindow = createNewWindow({
+    id: upgradePopupId, title: "System Notification", url: 'upgrade_popup.html',
+    iconEmoji: '⚡', width: popupWidth, height: popupHeight,
+    initialTop: topPos, initialLeft: leftPos
+    });
+    
+    if (upgradeWindow) {
+    upgradeWindow.style.zIndex = highestZIndex + 100; // Ensure it's very high
+    console.log("Upgrade Experience popup created.");
+    } else {
+    console.error("Failed to create Upgrade Experience popup window.");
+    }
+    // Schedule the next popup regardless of success/failure to avoid spamming errors
+    scheduleNextUpgradePopup();
+    }
+    
+    function scheduleNextUpgradePopup() {
+    if (upgradePopupTimeoutId) clearTimeout(upgradePopupTimeoutId);
+    if (isIntegrationRequired === false) return; // Stop scheduling if integrated
+    
+    // Calculate next interval based on degradation
+    const interval = Math.max(minUpgradePopupInterval, baseUpgradePopupInterval - (upgradePopupIntervalReduction * degradationLevel));
+    console.log(`Scheduling next Upgrade Popup check in ${interval / 1000} seconds.`);
+    upgradePopupTimeoutId = setTimeout(triggerUpgradePopup, interval);
+    }
+    
+    
+    // --- Initial Setup Call ---
+    console.log("Desktop script finished setup.");
+    // Start subtle background effects interval
+    subtleGlitchIntervalId = setInterval(triggerSubtleGlitches, 5000); // Check every 5 seconds
+    // Start degradation interval (e.g., increase level every 30 seconds)
+    degradationIntervalId = setInterval(increaseDegradation, 30000);
+    // Start the first check for the upgrade popup
+    scheduleNextUpgradePopup();
+    
+    
+    </script>
+    </body>
+    </html>
