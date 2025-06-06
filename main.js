@@ -462,39 +462,15 @@ function startEyesOpeningAnimation() {
  * Handles cleanup of Scene 1 and initialization of Scene 2.
  */
 async function onEyesClosed() {
-    console.log("DEBUG: onEyesClosed called. Initiating scene switch.");
-    showHud(); // Show the loading screen HUD (loader.html)
-    cleanupScene1(); // Clean up resources used by Scene 1
+    console.log("DEBUG: onEyesClosed called. Cleaning up Three.js and transitioning to Unity.");
+    showHud(); // Show your existing loader.html HUD to mask the transition
+    cleanupScene1(); // This is crucial to free up browser memory and remove the Three.js canvas
 
-    // Safety check: Ensure the document body exists before proceeding
-    if (!document.body) { console.error("FATAL: document.body is null before initWorldScene!"); return; }
-
-    // Define promises for minimum loading time and actual world scene loading
-    const minLoadingTimePromise = new Promise(resolve => setTimeout(resolve, 5000)); // Enforce 5 seconds minimum loading time
-    console.log("DEBUG: Minimum 5s loading timer started.");
-
-    console.log("DEBUG: Calling initWorldScene...");
-    // Call the initialization function from worldScene.js
-    const worldLoadPromise = initWorldScene(document.body) // Pass the body as the container for the new renderer
-        .then(() => { console.log("DEBUG: worldLoadPromise resolved successfully (worldScene initialized)."); })
-        .catch((err) => { console.error("DEBUG: worldLoadPromise REJECTED:", err); throw err; }); // Re-throw error to be caught below
-
-    try {
-        // Wait for both the minimum loading time AND the world scene assets to finish loading
-        console.log("DEBUG: Waiting for Promise.all([minLoadingTimePromise, worldLoadPromise])...");
-        await Promise.all([minLoadingTimePromise, worldLoadPromise]);
-        console.log("DEBUG: Promise.all COMPLETED. Hiding HUD and opening eyes.");
-        hideHud(); // Hide the loading screen HUD
-        startEyesOpeningAnimation(); // Start opening the eyes to reveal Scene 2
-        resetInactivityTimer(); // Restart the inactivity timer for Scene 2
-    } catch (error) {
-        // Handle errors during the loading/initialization process
-        console.error("DEBUG: Promise.all FAILED or error during Scene 2 initialization:", error);
-        // Attempt to recover gracefully
-        hideHud(); // Still hide the HUD on error
-        startEyesOpeningAnimation(); // Still try to open the eyes
-        // Optionally display an error message to the user in the main window or console
-    }
+    // After a short delay to ensure cleanup is complete, navigate to the Unity app.
+    // The path should match the folder you created in your 'public' directory.
+    setTimeout(() => {
+        window.location.href = 'UnityScene/index.html';
+    }, 500); // A 0.5-second delay is usually enough
 }
 
 /**
