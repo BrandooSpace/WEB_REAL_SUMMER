@@ -11,10 +11,41 @@
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" tabindex="-1"></canvas>
       <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+        <div class="loader-container">
+          <div class="log-line">Attempting neural link synchronization...</div>
+          <div class="log-line">SYN_PACKET sent. Awaiting bio-response...</div>
+          <div class="log-line">ACK_BIO received. Connection verified.</div>
+          <div class="log-line">Bypassing cognitive filters [|||||.....]</div>
+          <div class="log-line">Filter bypass successful. Authenticating identity matrix...</div>
+          <div class="log-line">AUTH_MODE: Consciousness Signature</div>
+          <div class="log-line">Verifying profile hash... [#####.....]</div>
+          <div class="log-line">Identity confirmed: UNIT_734</div>
+          <div class="log-line">Binding user profile to System Core...</div>
+          <div class="log-line">ROOT ACCESS ACHIEVED.</div>
+         <div class="log-line">Loading core system modules...</div>
+          <div class="log-line">Synchronizing neural pathways...</div>
+         <div class="log-line">Mounting /dev/world...</div>
+          <div class="log-line">Optimizing resource allocation (User)...</div>
+
+        <div class="progress-container">
+            <span class="progress-label">Loading WORLD.glb:</span>
+            <div class="progress-bar-outer">
+                <div id="unity-progress-bar-full" class="progress-bar-inner"></div>
+            </div>
         </div>
+
+        <div class="progress-container compliance">
+            <span class="progress-label">User Compliance Sync:</span>
+            <div class="progress-bar-outer">
+                <div id="unity-progress-bar-full" class="progress-bar-inner"></div>
+            </div>
+        </div>
+
+
+        <div class="status-line">
+            Initializing environment... <span class="blinking-cursor"></span>
+        </div>
+    </div>
       </div>
       <div id="unity-warning"> </div>
       
