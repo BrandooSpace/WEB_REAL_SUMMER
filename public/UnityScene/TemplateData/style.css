@@ -1,0 +1,101 @@
+/* Base page style */
+body {
+  padding: 0;
+  margin: 0;
+  background: #000;
+  overflow: hidden; /* Prevent scrollbars */
+}
+
+/* Make the container fill the screen */
+#unity-container.unity-desktop {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/*
+ * THE KEY FIX:
+ * Force the canvas to fill its container, overriding Unity's script.
+*/
+#unity-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  background: #231F20; /* Default Unity canvas background */
+}
+
+/* Hide the default Unity footer and warning popups */
+#unity-footer, #unity-warning {
+  display: none !important;
+}
+
+
+/* --- Styles For Your Custom Loader (Copied from loader.html) --- */
+#unity-loading-bar {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: block; /* Loader is visible by default */
+}
+
+.loader-container {
+    padding: 20px;
+    height: calc(100% - 40px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    color: #00FF00; /* Bright green text */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    cursor: none;
+}
+
+.log-line {
+    white-space: pre;
+    margin: 2px 0;
+}
+
+.progress-container {
+    margin-top: 15px;
+}
+
+.progress-label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.progress-bar-outer {
+    width: 100%;
+    max-width: 400px;
+    height: 10px;
+    border: 1px solid #00FF00;
+    padding: 1px;
+    box-sizing: border-box;
+}
+
+#unity-progress-bar-full {
+    width: 0%;
+    height: 100%;
+    background-color: #00FF00;
+}
+
+.status-line {
+    margin-top: 15px;
+}
+
+.blinking-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 1em;
+    background-color: #00FF00;
+    animation: blink 1s infinite step-end;
+    vertical-align: bottom;
+    margin-left: 2px;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}

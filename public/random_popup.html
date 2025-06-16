@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Warning</title>
+    <link rel="stylesheet" href="win98-styles.css">
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        body { font-family: "Tahoma", "MS Sans Serif"; font-size: 9pt; background-color: var(--w98-bg-gray); display: flex; flex-direction: column; }
+        .content { padding: 15px 20px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; background-color: white; margin: 2px; border: 1px solid; border-color: var(--w98-border-dark) var(--w98-border-light) var(--w98-border-light) var(--w98-border-dark); box-shadow: inset 1px 1px 0 #808080;}
+        .icon { font-size: 24pt; margin-bottom: 5px; color: var(--w98-exciting-red); }
+        .message { font-weight: bold; }
+        @keyframes glitch-anim {
+            0% { transform: translate(0); opacity: 1; }
+            25% { transform: translate(2px, -1px) skewX(-3deg); opacity: 0.8; }
+            50% { transform: translate(-2px, 1px) skewX(2deg); opacity: 1; }
+            75% { transform: translate(1px, -2px) skewX(-1deg); opacity: 0.7; }
+            100% { transform: translate(0); opacity: 1; }
+        }
+        .glitchy { animation: glitch-anim 0.3s infinite steps(2, jump-none); }
+    </style>
+</head>
+<body>
+    <div class="w98-title-bar">
+        <span>Warning</span>
+         <div class="w98-title-buttons">
+             {/* <!-- No close button needed for barrage --> */}
+         </div>
+    </div>
+    <div class="content">
+        <div class="icon glitchy">⚠️</div>
+        <p class="message glitchy">KERNEL INSTABILITY DETECTED</p>
+        <p>Resource allocation error: 0xDEADBEEF</p>
+    </div>
+    <script> console.log("Random Popup Loaded"); </script>
+</body>
+</html>

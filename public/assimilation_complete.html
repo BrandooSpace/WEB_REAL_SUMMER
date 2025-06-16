@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assimilation Status</title>
+    <link rel="stylesheet" href="win98-styles.css">
+    <style>
+        html, body {
+            margin: 0; padding: 0; height: 100%; overflow: hidden;
+            background-color: var(--w98-bg-gray);
+            font-family: "Tahoma", "MS Sans Serif", Arial, sans-serif;
+            color: var(--w98-text-black);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+             /* Uses w98-border-raised from win98-styles.css */
+            padding: 25px 40px;
+            text-align: center;
+            background-color: var(--w98-bg-gray);
+            width: 350px; /* Adjust size as needed */
+        }
+        h1 {
+            font-size: 18pt;
+            font-weight: bold;
+            color: var(--w98-highlight); /* Navy */
+            margin: 0 0 25px 0;
+            text-transform: uppercase;
+        }
+        button {
+            /* Uses w98-button from win98-styles.css */
+            padding: 8px 30px;
+            font-size: 11pt;
+        }
+         button:active {
+             padding: 9px 29px 7px 31px; /* Nudge */
+         }
+    </style>
+</head>
+<body>
+    <div class="container w98-border-raised">
+        <h1>Assimilation Complete</h1>
+        <button class="w98-button" id="continueBtn">Continue</button>
+    </div>
+
+    <script>
+        const continueButton = document.getElementById('continueBtn');
+        if (continueButton) {
+            continueButton.addEventListener('click', () => {
+                console.log("Assimilation Complete: Continue button clicked.");
+                // Send message to parent (worldScene.js) to trigger reload
+                window.parent.postMessage({ type: 'resetApplication' }, '*');
+                continueButton.disabled = true;
+                continueButton.textContent = 'Reloading...';
+            });
+        }
+
+         // Keep interaction listener for consistency
+         document.addEventListener('click', function(event) {
+           if (event.target.closest('button')) {
+             console.log('Interaction click detected in assimilation_complete:', event.target.tagName, event.target.textContent?.substring(0, 20));
+             // Let the specific button handler send the main message
+             if (event.target !== continueButton) {
+                 window.parent.postMessage({ type: 'userInteractionClick' }, '*');
+             }
+           }
+         }, true);
+    </script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-src 'self'; img-src 'self' data:; connect-src 'self';">
+
+    <title>System Start</title> {/* Changed Title */}
+
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="win98-styles.css">
+
+    <style>
+        /* Basic Reset and Body Styles */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: "Tahoma", "MS Sans Serif", Arial, sans-serif; /* Win98 Font */
+            /* MODIFICATION: Use a standard Win98 background color */
+            background-color: #008080; /* Win98 Teal */
+            color: #000000; /* Black text */
+            display: flex; /* Used for initial loader centering */
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Loader Wrapper - Stays positioned until removed */
+        #loaderWrapper {
+            position: fixed; /* Keep loader centered */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20000; /* Ensure loader is on top initially */
+            /* MODIFICATION: Match body background */
+            background-color: #008080;
+            transition: opacity 0.5s ease-out;
+        }
+        #loaderWrapper.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Loading Container - Styled like a Win98 dialog */
+        .loading-container {
+            width: 90%;
+            max-width: 350px; /* Slightly smaller for a dialog feel */
+            background-color: var(--w98-bg-gray); /* Win98 Gray */
+            color: var(--w98-text-black); /* Black text */
+            padding: 2px; /* Padding for the raised border effect */
+            /* Win98 Raised Border */
+            border: 1px solid;
+            border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light);
+            box-shadow: 1px 1px 0 var(--w98-border-black);
+            display: flex;
+            flex-direction: column;
+            align-items: stretch; /* Stretch children horizontally */
+            /* Remove transition from container, apply to wrapper */
+        }
+
+        /* MODIFICATION: Add a Title Bar */
+        .start-title-bar {
+            background-color: var(--w98-highlight); /* Active color */
+            color: var(--w98-highlight-text);
+            padding: 3px 5px;
+            font-weight: bold;
+            font-size: 9pt;
+            text-align: left;
+            margin-bottom: 10px; /* Space below title bar */
+        }
+
+        /* Inner Content Box */
+        .loading-content {
+            background-color: var(--w98-bg-gray); /* Win98 Gray */
+            padding: 20px 30px 25px 30px; /* Adjusted padding */
+            text-align: center;
+            display: flex; /* Enable flex for centering button */
+            flex-direction: column;
+            align-items: center; /* Center items horizontally */
+        }
+
+        /* Loading Text */
+        .loading-text {
+            font-size: 11pt; /* Standard dialog font size */
+            font-weight: normal; /* Normal weight */
+            margin-bottom: 25px; /* Space before button */
+            color: var(--w98-text-black);
+        }
+
+        /* Progress Bar Styles - MODIFICATION: Hide initially */
+        .progress-bar-container {
+            display: none; /* Hide progress bar on start screen */
+            /* Styles kept in case needed later, but initially hidden */
+            width: 100%;
+            height: 20px;
+            background-color: #C0C0C0; /* Match background */
+            padding: 2px;
+            margin-bottom: 25px;
+            /* Win98 Sunken Border */
+            border: 1px solid;
+            border-color: #808080 #FFFFFF #FFFFFF #808080; /* dark light light dark */
+            box-shadow: inset 1px 1px 0 #000000;
+            box-sizing: border-box;
+        }
+        .progress-bar-inner {
+            width: 0%;
+            height: 100%;
+            background-color: #000080; /* Win98 Highlight Blue */
+        }
+
+        /* Start Button Styles - MODIFICATION: Make visible immediately */
+        .start-button {
+            /* Uses w98-button styles from the linked CSS */
+            display: inline-block; /* Show button */
+            padding: 6px 30px; /* Make button a bit wider */
+            font-size: 10pt;
+            font-weight: normal;
+            /* No opacity transition needed now */
+        }
+
+        /* Styles from index.html needed for main.js - KEEP THESE */
+        canvas { display: none; position: absolute; top: 0; left: 0; z-index: 0; }
+        #css-renderer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; display: none; }
+        #css-renderer iframe, #css-renderer div > iframe { pointer-events: auto !important; border: none; background: transparent; }
+        .eyelid { position: fixed; left: 0; width: 100%; height: 0; background-color: #000; z-index: 10000; transition: height 1.5s ease-in-out; pointer-events: none; }
+        #eyelid-top { top: 0; }
+        #eyelid-bottom { bottom: 0; }
+        .eyelid.closing { height: 50vh; }
+        #hudFrame { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; border: none; z-index: 10001; display: none; background-color: #000; }
+        .hud-popup-window { position: fixed; background-color: var(--w98-bg-gray); z-index: 10002; display: none; overflow: hidden; padding: 1px; pointer-events: auto; }
+        .hud-popup-window iframe { width: 100%; height: 100%; border: none; display: block; background-color: transparent; }
+        #adPopupHud { width: 340px; height: 400px; top: 60px; right: 30px; z-index: 10002; }
+        #subPopupHud { width: 450px; height: 480px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10003; }
+        #cardEntryPopupHud { width: 480px; height: 400px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10004; }
+        #apparelAdPopupHud { width: 340px; height: 400px; bottom: 40px; right: 20px; z-index: 10005; }
+        #fpvHudIndicator { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background-color: var(--w98-bg-gray); border: 1px solid; border-color: var(--w98-border-light) var(--w98-border-dark) var(--w98-border-dark) var(--w98-border-light); box-shadow: 1px 1px 0 var(--w98-border-black); padding: 4px 12px; font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif; font-size: 10pt; color: var(--w98-text-black); z-index: 10006; display: none; pointer-events: none; white-space: nowrap; }
+        #mainHudContainer { position: fixed; bottom: 0; left: 0; width: 100%; height: 30px; z-index: 999; pointer-events: none; overflow: hidden; display: none; }
+        #mainHudFrame { width: 100%; height: 100%; border: none; }
+        #glitch-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: black; z-index: 10007; pointer-events: none; display: none; opacity: 0; overflow: hidden; }
+        /* Include necessary glitch keyframes if main.js relies on them being here */
+        @keyframes glitch-fade { 0% { opacity: 0; } 10% { opacity: 0.85; } 80% { opacity: 0.7; } 100% { opacity: 0; } }
+        #glitch-overlay.active { animation: glitch-fade var(--glitch-duration, 0.8s) linear forwards; }
+        #glitch-overlay.active::before, #glitch-overlay.active::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; opacity: 0; animation-duration: 0.6s; animation-timing-function: steps(3, jump-none); animation-iteration-count: infinite; }
+        @keyframes glitch-offset-enhanced { 0% { transform: translate(0) skew(0); background-color: rgba(255, 0, 0, 0.3); opacity: 0.7; } 20% { transform: translate(-15px, 8px) skew(-8deg); background-color: rgba(0, 255, 0, 0.2); opacity: 0.5; } 40% { transform: translate(10px, -12px) skew(5deg); background-color: rgba(0, 0, 255, 0.4); opacity: 0.8; } 60% { transform: translate(-8px, 15px) skew(-3deg); background-color: rgba(255, 255, 0, 0.2); opacity: 0.6; } 80% { transform: translate(12px, -5px) skew(6deg); background-color: rgba(255, 0, 255, 0.3); opacity: 0.75; } 100% { transform: translate(0) skew(0); background-color: rgba(0, 255, 255, 0.2); opacity: 0.5; } }
+        @keyframes glitch-offset-2-enhanced { 0% { transform: translate(0) skew(0); background-color: rgba(0, 255, 255, 0.3); opacity: 0.6; } 20% { transform: translate(13px, -6px) skew(7deg); background-color: rgba(255, 0, 255, 0.25); opacity: 0.7; } 40% { transform: translate(-9px, 10px) skew(-4deg); background-color: rgba(255, 255, 0, 0.35); opacity: 0.55; } 60% { transform: translate(16px, -11px) skew(8deg); background-color: rgba(0, 0, 255, 0.2); opacity: 0.8; } 80% { transform: translate(-11px, 7px) skew(-6deg); background-color: rgba(0, 255, 0, 0.3); opacity: 0.65; } 100% { transform: translate(0) skew(0); background-color: rgba(255, 0, 0, 0.2); opacity: 0.7; } }
+        #glitch-overlay.active::before { animation-name: glitch-offset-enhanced; clip-path: polygon(0 0, 100% 0, 100% 48%, 0 52%); }
+        #glitch-overlay.active::after { animation-name: glitch-offset-2-enhanced; animation-delay: 0.05s; clip-path: polygon(0 100%, 100% 100%, 100% 55%, 0 45%); }
+
+
+    </style>
+</head>
+<body>
+    <div id="loaderWrapper">
+        <div class="loading-container w98-border-raised"> {/* Added Win98 border class */}
+            {/* MODIFICATION: Added Title Bar */}
+            <div class="start-title-bar">System Startup</div>
+            <div class="loading-content">
+                 {/* MODIFICATION: Changed text */}
+                <div class="loading-text" id="loadingText">Welcome to the Integrated Environment.</div>
+                {/* Progress bar is hidden by default via CSS */}
+                <div class="progress-bar-container" id="progressBarContainer">
+                    <div class="progress-bar-inner" id="progressBar"></div>
+                </div>
+                {/* MODIFICATION: Changed text and removed 'complete' class logic for visibility */}
+                <button class="start-button w98-button" id="startButton" onclick="startGame()">Enter</button>
+            </div>
+        </div>
+    </div>
+
+    {/* Keep placeholder elements for main.js */}
+    <div id="css-renderer"></div>
+    <div id="adPopupHud" class="hud-popup-window w98-border-raised">
+        <iframe id="adPopupFrame" src="about:blank"></iframe>
+    </div>
+    <div id="subPopupHud" class="hud-popup-window w98-border-raised">
+        <iframe id="subPopupFrame" src="about:blank"></iframe>
+    </div>
+    <div id="cardEntryPopupHud" class="hud-popup-window w98-border-raised">
+        <iframe id="cardEntryFrame" src="about:blank"></iframe>
+    </div>
+    <div id="apparelAdPopupHud" class="hud-popup-window w98-border-raised">
+        <iframe id="apparelAdFrame" src="about:blank"></iframe>
+    </div>
+    <div id="fpvHudIndicator">Click to move camera</div>
+    <div id="mainHudContainer">
+        <iframe id="mainHudFrame" src="about:blank"></iframe>
+    </div>
+    <div id="glitch-overlay"></div>
+    <div id="eyelid-top" class="eyelid"></div>
+    <div id="eyelid-bottom" class="eyelid"></div>
+    <iframe id="hudFrame" src="about:blank"></iframe>
+
+    <script>
+        // Removed simulateLoading function and related variables
+        const startButton = document.getElementById('startButton');
+        const loaderWrapper = document.getElementById('loaderWrapper');
+
+        // Function called when the Start button is clicked
+        function startGame() {
+            console.log("Start button clicked!");
+
+            // 1. Disable button
+            if (startButton) {
+                startButton.disabled = true;
+                startButton.textContent = "Starting...";
+                startButton.style.cursor = "wait";
+            }
+
+            // 2. Fade out the loader wrapper
+            if (loaderWrapper) {
+                loaderWrapper.classList.add('hidden');
+            }
+
+            // 3. After fade out, remove loader and load main.js
+            setTimeout(() => {
+                if (loaderWrapper && loaderWrapper.parentNode) {
+                    loaderWrapper.parentNode.removeChild(loaderWrapper); // Remove loader from DOM
+                    console.log("Loader removed.");
+                }
+
+                // Make sure body allows main.js to take over styling
+                document.body.style.display = ''; // Reset display property if needed
+                document.body.style.justifyContent = '';
+                document.body.style.alignItems = '';
+                document.body.style.backgroundColor = '#111'; // Set background expected by main.js
+
+                // Dynamically load main.js as a module
+                console.log("Loading main.js...");
+                const script = document.createElement('script');
+                script.type = 'module'; // IMPORTANT: main.js uses modules
+                script.src = 'main.js'; // Path to your main script
+                script.onerror = () => {
+                    console.error("Failed to load main.js!");
+                    // Provide fallback feedback to the user
+                    document.body.innerHTML = '<h1 style="color: red; text-align: center; margin-top: 50px;">Error: Failed to load application script.</h1>';
+                };
+                document.body.appendChild(script);
+
+                // Make canvas/renderer visible (main.js should handle adding them)
+                 const cssRendererEl = document.getElementById('css-renderer');
+                 if (cssRendererEl) cssRendererEl.style.display = 'block';
+                 // Note: The WebGL canvas is added by main.js itself.
+
+            }, 500); // Match the fade-out transition duration (0.5s)
+        }
+
+        // MODIFICATION: Removed the DOMContentLoaded event listener that called simulateLoading
+        // document.addEventListener('DOMContentLoaded', simulateLoading);
+
+    </script>
+</body>
+</html>

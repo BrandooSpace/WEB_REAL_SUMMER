@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Notification</title>
+    <link rel="stylesheet" href="win98-styles.css">
+    <style>
+        html, body {
+            margin: 0; padding: 0; height: 100%; overflow: hidden;
+            background-color: var(--w98-bg-gray);
+            font-family: "Tahoma", "MS Sans Serif", Arial, sans-serif;
+        }
+        .popup-container {
+            width: 100%; height: 100%; display: flex; flex-direction: column;
+            box-sizing: border-box;
+            padding: 2px; /* Padding for border */
+        }
+        .popup-content {
+            padding: 20px 25px;
+            flex-grow: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center content vertically */
+            align-items: center; /* Center content horizontally */
+            text-align: center;
+            gap: 15px; /* Space between elements */
+        }
+        .popup-content p {
+            margin: 0;
+            font-size: 10pt;
+            line-height: 1.4;
+        }
+        .popup-content strong {
+            color: var(--w98-highlight); /* Navy blue */
+        }
+        .popup-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .popup-buttons button { /* Uses w98-button */
+            padding: 5px 15px;
+            min-width: 80px;
+        }
+         .popup-buttons button:focus {
+             outline: 1px dotted var(--w98-text-black);
+             outline-offset: -3px;
+         }
+    </style>
+</head>
+<body>
+    <div class="popup-container w98-border-raised">
+        <div class="w98-title-bar">
+            <span>System Notification</span>
+            <div class="w98-title-buttons">
+                 <button title="Close" onclick="window.parent.postMessage({type: 'closeUpgradePopup'}, '*')">r</button>
+            </div>
+        </div>
+        <div class="popup-content">
+            <p>Your current experience can be <strong>enhanced</strong>!</p>
+            <p>Resolve performance issues and unlock full system potential through <strong>Integration</strong>.</p>
+            <div class="popup-buttons">
+                <button class="w98-button" id="integrateBtn">Integrate Now</button>
+                <button class="w98-button" id="closeBtn" onclick="window.parent.postMessage({type: 'closeUpgradePopup'}, '*')">Later</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const integrateButton = document.getElementById('integrateBtn');
+        if (integrateButton) {
+            integrateButton.addEventListener('click', () => {
+                console.log("Upgrade Popup: Integrate Now clicked.");
+                // Navigate the main browser window to the Synergy Portal
+                window.parent.postMessage({
+                    type: 'navigateBrowser',
+                    payload: { url: 'computervision.html' }
+                }, '*');
+                 // Close this popup
+                 window.parent.postMessage({ type: 'closeUpgradePopup' }, '*');
+            });
+        }
+
+        // Focus the "Integrate Now" button by default
+        document.addEventListener('DOMContentLoaded', () => {
+             if (integrateButton) integrateButton.focus();
+        });
+    </script>
+    <!-- Keep interaction listener for consistency -->
+    <script>
+        document.addEventListener('click', function(event) {
+          if (event.target.closest('button, a')) {
+            console.log('Interaction click detected in upgrade_popup:', event.target.tagName, event.target.textContent?.substring(0, 20));
+            window.parent.postMessage({ type: 'userInteractionClick' }, '*');
+          }
+        }, true);
+    </script>
+</body>
+</html>
+241.2s

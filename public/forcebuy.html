@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Required</title>
+    <link rel="stylesheet" href="win98-styles.css">
+    <style>
+        /* --- Page-Specific Styles --- */
+        body {
+            /* Inherits base from win98-styles.css via class */
+            background-color: #008080; /* Teal background */
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11pt; overflow: auto;
+        }
+
+        /* --- Dialog Box --- */
+        .dialog-box {
+            width: 380px; background: var(--w98-bg-gray); padding: 2px;
+            display: flex; flex-direction: column; min-height: 150px;
+        }
+        .dialog-box.w98-border-raised { /* Apply border class */ }
+
+        /* --- Title Bar --- */
+        .title-bar { /* Uses w98-title-bar base */
+            margin-bottom: 8px;
+        }
+        .title-bar button { /* Uses w98-title-buttons button base */
+             cursor: default;
+        }
+
+        /* --- Content Area --- */
+        .dialog-content {
+            padding: 25px 30px; text-align: center; display: flex; flex-direction: column;
+            align-items: center; gap: 20px; flex-grow: 1; overflow: auto;
+        }
+
+        .message {
+            font-weight: bold; font-size: 12pt; text-transform: uppercase;
+            color: #AA0000; /* Dark Red */
+        }
+
+        /* --- Button Style --- */
+        .action-button { /* Uses w98-button base */
+            font-size: 11pt; font-weight: bold; padding: 8px 25px; flex-shrink: 0;
+        }
+        .action-button:active { /* Keep specific active padding */
+            padding: 9px 24px 7px 26px;
+        }
+        /* --- Progress Bar for Auto-Trigger --- */
+        .progress-container {
+            width: 80%;
+            height: 10px;
+            background-color: var(--w98-border-dark);
+            border: 1px solid var(--w98-border-black);
+            margin-top: 5px; /* Space above progress */
+            margin-bottom: 15px; /* Space below progress */
+            box-shadow: inset 1px 1px 0 #555;
+            overflow: hidden;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--w98-highlight); /* Use highlight color */
+            transition: width 0.1s linear; /* Smooth transition */
+        }
+        @keyframes progressBarFill {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+        .progress-bar.filling {
+            animation: progressBarFill 3s linear forwards; /* 3 second fill */
+        }
+
+
+    </style>
+</head>
+<body class="win98-body">
+    <div class="dialog-box w98-border-raised">
+        <div class="title-bar w98-title-bar">
+            <span>Action Required</span>
+            <div class="w98-title-buttons">
+                <button disabled>X</button>
+            </div>
+        </div>
+        <div class="dialog-content">
+            <p class="message">INTEGRATE COMPUTER VISION TO CONTINUE</p>
+            <button class="w98-button action-button" id="actionButton" disabled>ACCESSING...</button>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function accessCompVision() {
+            console.log("Auto-navigating to Computer Vision...");
+            window.parent.postMessage({
+                type: 'navigateBrowser',
+                payload: { url: 'computervision.html' }
+            }, '*');
+            // Optionally close this window - this requires coordination with desktop.html
+            // to know the window ID. For now, we just navigate the main browser.
+        }
+
+        // --- Auto-trigger logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const progressBar = document.getElementById('progressBar');
+            const actionButton = document.getElementById('actionButton');
+            const autoTriggerDelay = 3000; // 3 seconds
+
+            if (progressBar && actionButton) {
+                // Start the progress bar animation
+                progressBar.classList.add('filling');
+
+                // Set timeout to trigger the navigation when the progress bar finishes
+                setTimeout(() => {
+                    actionButton.textContent = "REDIRECTING"; // Change button text
+                    accessCompVision();
+                }, autoTriggerDelay);
+            } else {
+                console.error("Progress bar or action button element not found.");
+                // Fallback if elements are missing
+                setTimeout(accessCompVision, autoTriggerDelay + 500); // Trigger slightly later as fallback
+            }
+        });
+    </script>
+<script>
+    // Keep the interaction click listener for consistency, though it won't affect this page's main action
+    document.addEventListener('click', function(event) {
+      if (event.target.closest('button, a, .sidebar a, .file-list-table tbody tr, .folder-list-pane li, .email-list-table tbody tr')) {
+        console.log('Interaction click detected in iframe:', event.target.tagName, event.target.textContent?.substring(0, 20));
+        window.parent.postMessage({ type: 'userInteractionClick' }, '*');
+      }
+    }, true);
+  </script>
+  </body>
+</html>

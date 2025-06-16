@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization Gateway // Secure Credential Input</title>
+    <style>
+        :root { /* Keep existing variables */
+            --entry-win-bg: #FFFFFF; --entry-win-bg-gray: #C0C0C0;
+            --entry-win-border-light: #FFFFFF; --entry-win-border-dark: #808080;
+            --entry-win-border-black: #000000; --entry-win-text-black: #000000;
+            --entry-win-highlight: #000080; --entry-win-highlight-text: #FFFFFF;
+            /* ADDED: Success color */
+            --entry-success-green: #228B22; /* Forest Green */
+        }
+
+        body {
+            margin: 0; padding: 0; font-family: "Tahoma", "MS Sans Serif", sans-serif;
+            background-color: var(--entry-win-bg); color: var(--entry-win-text-black); font-size: 10pt;
+            display: flex; justify-content: center; padding-top: 30px; height: 100%; box-sizing: border-box;
+            /* Added transition for background color change */
+            transition: background-color 0.5s ease;
+        }
+
+        /* MODIFIED: Added class for success state */
+        body.payment-success {
+            background-color: var(--entry-success-green);
+            align-items: center; /* Center content vertically */
+            padding-top: 0; /* Remove padding when centered */
+        }
+
+        .entry-container {
+            width: 90%; max-width: 450px; padding: 20px; position: relative;
+            /* Added transition for hiding */
+             transition: opacity 0.3s ease;
+        }
+        /* Hide container when body has success class */
+        body.payment-success .entry-container {
+            display: none;
+        }
+
+
+        .flashing-header {
+            font-size: 16pt; font-weight: bold; text-align: center;
+            margin-bottom: 20px; text-transform: uppercase;
+            animation-name: subtleTextFlash; animation-duration: 2s;
+            animation-iteration-count: infinite; animation-timing-function: linear;
+        }
+        @keyframes subtleTextFlash {
+            0%   { color: #800000; opacity: 0.8; }
+            50%  { color: #000080; opacity: 1.0; }
+            100% { color: #800000; opacity: 0.8; }
+        }
+
+        /* --- Form Styling --- */
+        .payment-form { display: flex; flex-direction: column; gap: 10px; }
+        .form-group { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+        .form-group label { margin-bottom: 1px; font-size: 9pt; color: #333; }
+        .form-group input[type="text"] {
+            width: 100%; padding: 4px 5px; font-family: "MS Sans Serif", sans-serif; font-size: 10pt;
+            border: 1px solid; border-color: var(--entry-win-border-dark) var(--entry-win-border-light) var(--entry-win-border-light) var(--entry-win-border-dark);
+            box-shadow: inset 1px 1px 0 #808080; box-sizing: border-box;
+        }
+        .expiry-cvv-group { display: flex; gap: 10px; }
+        .expiry-cvv-group .form-group { flex-grow: 1; }
+         .submit-button {
+            margin-top: 15px; padding: 6px 25px; font-family: "MS Sans Serif", sans-serif; font-size: 10pt;
+            font-weight: bold; color: var(--entry-win-text-black); background-color: var(--entry-win-bg-gray);
+            border: 1px solid; border-color: var(--entry-win-border-light) var(--entry-win-border-dark) var(--entry-win-border-dark) var(--entry-win-border-light);
+            box-shadow: 1px 1px 0 var(--entry-win-border-black); cursor: pointer; align-self: center;
+        }
+         .submit-button:active {
+             border-color: var(--entry-win-border-dark) var(--entry-win-border-light) var(--entry-win-border-light) var(--entry-win-border-dark);
+             box-shadow: none; padding: 7px 24px 5px 26px;
+        }
+
+        /* --- Dropdown Menu Styles --- */
+        #fakeCardDropdown { display: none; position: absolute; background-color: var(--entry-win-border-light, #FFFFFF); border: 1px solid; border-color: var(--entry-win-border-light) var(--entry-win-border-dark) var(--entry-win-border-dark) var(--entry-win-border-light); box-shadow: 1px 1px 0 var(--entry-win-border-black); z-index: 10; font-size: 9pt; min-width: 180px; padding: 1px; }
+        #fakeCardDropdown a { display: block; padding: 3px 20px 3px 8px; color: var(--entry-win-text-black); text-decoration: none; cursor: pointer; white-space: nowrap; }
+        #fakeCardDropdown a:hover { background-color: var(--entry-win-highlight); color: var(--entry-win-highlight-text); }
+
+        /* --- Terms Box Style --- */
+        .terms-box {
+            border: 1px inset var(--entry-win-border-dark);
+            border-top-color: var(--entry-win-border-dark); border-left-color: var(--entry-win-border-dark);
+            border-bottom-color: var(--entry-win-border-light); border-right-color: var(--entry-win-border-light);
+            box-shadow: inset 1px 1px 0 var(--entry-win-border-black);
+            background-color: #e0e0e0;
+            height: 40px;
+            overflow-y: scroll;
+            font-size: 6pt;
+            line-height: 1.1;
+            color: #666;
+            padding: 3px;
+            margin-top: 5px; /* Reduced margin */
+            font-family: monospace;
+        }
+        /* --- ** NEW: Forced Consent Checkbox Styles ** --- */
+        .consent-group {
+            display: flex;
+            align-items: center;
+            margin-top: 10px; /* Space above checkbox */
+            margin-bottom: 5px; /* Space below checkbox */
+        }
+        .consent-group input[type="checkbox"] {
+            /* Style like Win98 checkbox */
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            width: 13px;
+            height: 13px;
+            background-color: var(--entry-win-border-light); /* White background */
+            border: 1px solid;
+            border-color: var(--entry-win-border-dark) var(--entry-win-border-light) var(--entry-win-border-light) var(--entry-win-border-dark); /* Sunken */
+            box-shadow: inset 1px 1px 0 var(--entry-win-border-black);
+            position: relative; /* For checkmark */
+            cursor: not-allowed; /* Indicate disabled */
+            margin-right: 6px;
+        }
+        .consent-group input[type="checkbox"]:checked::before {
+            /* Win98 style checkmark */
+            content: '';
+            display: block;
+            position: absolute;
+            width: 7px;
+            height: 3px;
+            border-left: 2px solid var(--entry-win-text-black);
+            border-bottom: 2px solid var(--entry-win-text-black);
+            transform: rotate(-45deg) translate(-1px, 4px);
+        }
+        .consent-group label {
+            font-size: 8pt;
+            color: #555; /* Greyed out text */
+        }
+
+        /* --- Status Indicator --- */
+        .status-indicator {
+             position: absolute;
+             bottom: 5px;
+             right: 5px;
+             width: 10px;
+             height: 10px;
+             background-color: #ff0000; /* Red */
+             border: 1px solid black;
+             border-radius: 50%;
+             animation: blink-status 1s infinite steps(1, end);
+        }
+        @keyframes blink-status {
+             0%, 100% { background-color: #ff0000; } /* Red */
+             50% { background-color: #550000; } /* Dark Red */
+        }
+
+        /* --- Payment Received Message Style --- */
+        #paymentReceivedMessage {
+            display: none; /* Hidden initially */
+            font-size: 36pt; /* Large text */
+            font-weight: bold;
+            color: black;
+            text-align: center;
+            padding: 20px;
+        }
+        /* Show message when body has success class */
+        body.payment-success #paymentReceivedMessage {
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="entry-container">
+        <h1 class="flashing-header">REQUIRED PAYMENT INPUT</h1>
+
+        <form class="payment-form" id="paymentForm" onsubmit="event.preventDefault(); submitPayment();">
+            <div class="form-group">
+                <label for="cardNumber">Credit Card Number (16 Digit):</label>
+                <input type="text" class="card-input" id="cardNumber" name="cardNumber" maxlength="19" placeholder="#### #### #### ####">
+            </div>
+             <div class="form-group">
+                <label for="cardName">Designated Holder Identification:</label>
+                <input type="text" class="card-input" id="cardName" name="cardName" placeholder="LASTNAME, FIRSTNAME">
+            </div>
+            <div class="expiry-cvv-group">
+                <div class="form-group">
+                    <label for="expiryDate">Valid Thru (MM/YY):</label>
+                    <input type="text" class="card-input" id="expiryDate" name="expiryDate" maxlength="5" placeholder="MM/YY">
+                </div>
+                <div class="form-group">
+                    <label for="cvv">Security Key (3-4 Digit):</label>
+                    <input type="text" class="card-input" id="cvv" name="cvv" maxlength="4" placeholder="###">
+                </div>
+            </div>
+
+             <div class="consent-group">
+                 <input type="checkbox" id="termsAgree" name="termsAgree" checked disabled>
+                 <label for="termsAgree">I have read, understood, and irrevocably agree to the terms.</label>
+             </div>
+
+             <div class="terms-box" id="termsBox">
+                 Mandatory Compliance Agreement Rev 11.3 Section 4a: User acknowledges permanent data linkage... fiduciary responsibility waiver... arbitration clause 7.2... biometric data consent... network resource contribution... non-termination clause... quantum entanglement disclaimer... perpetual license grant... system stability acknowledgment... cognitive dissonance acceptance... reality framework adherence... temporal distortion waiver... consciousness upload consent (implied)... error margin acknowledgment (±5 AE)... void where prohibited by localized reality matrix... subjective experience logging enabled... By proceeding, user affirms understanding and unconditional acceptance of all 1,742 sub-clauses and appendices... [Repeat ad nauseam]
+             </div>
+
+            <button type="submit" class="submit-button">CONTINUE</button>
+        </form>
+
+         <div id="fakeCardDropdown">
+             <a href="#" class="dropdown-item" data-name="SYSTEM ADMINISTRATOR" data-number="4987 6543 2109 8765" data-expiry="12/99" data-cvv="123">Visa - SysAdmin Primary</a>
+             <a href="#" class="dropdown-item" data-name="TEST USER GAMMA" data-number="5123 4567 8901 2345" data-expiry="06/01" data-cvv="987">MasterCard - Test Gamma</a>
+              <a href="#" class="dropdown-item" data-name="MAINFRAME ACCESS" data-number="3782 822463 10001" data-expiry="01/00" data-cvv="4567">Amex - Server Account</a>
+         </div>
+
+         <div class="status-indicator" title="Data Stream Active"></div>
+    </div>
+
+    <div id="paymentReceivedMessage">PAYMENT RECEIVED</div>
+
+    <script>
+        const paymentForm = document.getElementById('paymentForm');
+        const entryContainer = document.querySelector('.entry-container');
+        const paymentReceivedMsg = document.getElementById('paymentReceivedMessage');
+        const inputs = paymentForm.querySelectorAll('.card-input');
+        const dropdown = document.getElementById('fakeCardDropdown');
+        const dropdownItems = dropdown.querySelectorAll('.dropdown-item');
+        const termsBox = document.getElementById('termsBox');
+
+        // --- Auto-scroll Terms Box ---
+        if (termsBox) {
+            let scrollInterval = setInterval(() => {
+                termsBox.scrollTop += 1;
+            }, 70);
+        }
+
+        // --- Show/Hide Dropdown Logic ---
+        inputs.forEach(input => {
+            input.addEventListener('focus', (e) => {
+                const inputRect = e.target.getBoundingClientRect();
+                const containerRect = e.target.closest('.entry-container').getBoundingClientRect();
+                const topPos = (inputRect.bottom - containerRect.top) + 2;
+                const leftPos = inputRect.left - containerRect.left;
+                const width = inputRect.width;
+                dropdown.style.top = `${topPos}px`;
+                dropdown.style.left = `${leftPos}px`;
+                dropdown.style.minWidth = `${width}px`;
+                dropdown.style.display = 'block';
+            });
+        });
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const name = e.target.dataset.name;
+                const number = e.target.dataset.number;
+                const expiry = e.target.dataset.expiry;
+                const cvv = e.target.dataset.cvv;
+                document.getElementById('cardName').value = name || '';
+                document.getElementById('cardNumber').value = number || '';
+                document.getElementById('expiryDate').value = expiry || '';
+                document.getElementById('cvv').value = cvv || '';
+                dropdown.style.display = 'none';
+            });
+        });
+        document.addEventListener('click', (e) => {
+            let isInput = false;
+            inputs.forEach(input => { if (input.contains(e.target)) isInput = true; });
+            if (!dropdown.contains(e.target) && !isInput) { dropdown.style.display = 'none'; }
+        });
+
+        // --- MODIFIED: Submission Logic ---
+        function submitPayment() {
+            const button = document.querySelector('.submit-button');
+            button.textContent = 'Processing...';
+            button.disabled = true;
+            dropdown.style.display = 'none';
+
+            // ** NEW: Send payment confirmation message to parent **
+            console.log("Sending paymentConfirmed message to parent.");
+            window.parent.postMessage({ type: 'paymentConfirmed' }, '*');
+
+            // ** MODIFIED: Delay the visual change and closing message slightly **
+            const visualChangeDelay = 500; // ms delay before showing green screen/message
+            const closePopupDelay = visualChangeDelay + 1500; // ms delay before sending close message (1.5s after visual change)
+
+            // Hide the form container after a short delay
+            setTimeout(() => {
+                if (entryContainer) {
+                    entryContainer.style.opacity = '0';
+                    entryContainer.style.pointerEvents = 'none';
+                }
+                // Add success class to body after fade out starts
+                document.body.classList.add('payment-success');
+            }, visualChangeDelay - 200); // Start fade slightly before green screen
+
+            // Show success message after visualChangeDelay
+            setTimeout(() => {
+                 console.log("Payment confirmed state displayed.");
+                 // MODIFIED: Send message to parent to close this popup after closePopupDelay
+                 setTimeout(() => {
+                    console.log(`Sending closeCardEntryPopup message after ${closePopupDelay}ms total.`);
+                    window.parent.postMessage({ type: 'closeCardEntryPopup' }, '*');
+                 }, closePopupDelay - visualChangeDelay); // Time relative to visual change
+            }, visualChangeDelay);
+        }
+    </script>
+<script>
+    document.addEventListener('click', function(event) {
+      // Check if the clicked element is a button, link, or inside certain interactive areas
+      if (event.target.closest('button, a, .sidebar a, .file-list-table tbody tr, .folder-list-pane li, .email-list-table tbody tr')) {
+        // Optionally add more specific checks if needed
+        console.log('Interaction click detected in iframe:', event.target.tagName, event.target.textContent?.substring(0, 20));
+        window.parent.postMessage({ type: 'userInteractionClick' }, '*');
+      }
+    }, true); // Use capture phase to catch clicks early
+  </script>
+  </body>
+</html>
