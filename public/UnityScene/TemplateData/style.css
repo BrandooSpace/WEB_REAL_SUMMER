@@ -3,7 +3,7 @@ body {
   padding: 0;
   margin: 0;
   background: #000;
-  overflow: hidden;
+  overflow: hidden; /* Prevent scrollbars */
 }
 
 /* Make the container fill the screen */
@@ -17,7 +17,7 @@ body {
 
 /*
  * THE KEY FIX:
- * Force the canvas to fill the container, overriding Unity's script.
+ * Force the canvas to fill its container, overriding Unity's script.
 */
 #unity-canvas {
   width: 100% !important;
@@ -95,3 +95,7 @@ body {
     margin-left: 2px;
 }
 
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
